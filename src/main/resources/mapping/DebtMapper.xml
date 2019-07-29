@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.DebtDao">
+
+    <select id="debtList" resultType="java.util.Map">
+        SELECT * FROM(
+          select acc_CODE,ACC_name,moneY1,decode(sign(MONEY2),-1,-MONEY2,MONEY2) MONEY2,MONEY3,ACC_TYPE from table_tmp4
+          union ALL
+          select '' as acc_code,decode(acc_type,1,'(一) 资产类小计',2,'(二)负债类小计',3,'(三)净资产类小计',4,'(四)收入类小计',5,'(五)支出类小计') acc_name ,
+          SUM(MONEY1) MONEY1,decode(sign(SUM(MONEY2)),-1,-SUM(MONEY2),SUM(MONEY2)) MONEY2,DECODE(ACC_TYPE,1,SUM(NVL(moneY1,0)+NVL(MONEY2,0)),5, SUM(NVL(moneY1,0)+NVL(MONEY2,0)), SUM(NVL(moneY1,0)-NVL(MONEY2,0))) MONEY3,'' as ACC_TYPE
+          from table_tmp4 where length(ACC_CODE)=4 GROUP BY ACC_TYPE
+        ) order by acc_code
+    </select>
+
+    <select id="payList" resultType="java.util.Map">
+        select * from C_REPORT_MONTH where FISCAL = #{fiscal} and FIS_PERD = #{fis_perd}
+    </select>
+
+</mapper>

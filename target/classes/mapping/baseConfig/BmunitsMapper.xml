@@ -1,0 +1,40 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.baseConfig.BmunitsDao">
+
+    <!--根据单位编号,单位名称查询单位表数据(后台 单位编码 单位名称选传)-->
+    <select id="quesryBmunitsByCbmunitid" parameterType="java.util.Map" resultType="com.heitian.ssm.model.baseconfig.BmunitsModel">
+        Select  t1.*,t2.* from C_BMUNITS t1, C_YYKJHS_BMUNITS t2
+        <where>
+            t1.CBMUNITID=t2.CBMUNITID
+            <if test="cbmunitname!='' ">
+                and t1.CBMUNITNAME=#{cbmunitname}
+            </if>
+            <if test="cbmunitid !='' ">
+                and t1.CBMUNITID=#{cbmunitid}
+            </if>
+            and t1.cbmunitid Not In (1,2)
+        </where>
+    </select>
+
+    <!--根据单位编码,单位名称,年份对url,url_name,url_pwd,sid,shortname做修改-->
+    <update id="modifierBumnuitsByCondition" parameterType="java.util.Map">
+        update C_BMUNITS set
+        URL=#{url},URL_NAME=#{urlname},URL_PWD=#{urlpwd},SID=#{sid},SHORTNAME=#{shortname},SOURCE=#{source},CPAYURL=#{CPAYURL},KJHSURL=#{KJHSURL}
+        where
+        CBMUNITID =#{cbmunitid} and CBMUNITNMAE=#{cbmunitname}
+    </update>
+
+    <!--添加一条单位信息数据-->
+    <insert id="insertBmunits" parameterType="com.heitian.ssm.model.baseconfig.BmunitsModel">
+       Insert into C_BMUNITS
+          (CBMUNITID,CBMUNITNAME,URL,URL_NAME,URL_PWD,SID,CMEMO,SHORTNAME,SOURCE,CPAYURL,KJHSURL)
+      values
+          (#{CBMUNITID},#{CBMUNITNAME},#{URL},#{URL_NAME},#{URL_PWD},#{SID},#{CMEMO},#{SHORTNAME},#{SOURCE},#{CPAYURL},#{KJHSURL})
+
+    </insert>
+
+    <select id="queryAllCbmunit" resultType="java.util.Map">
+        select CO_CODE ,CO_NAME from C_YYKJHS_BMUNITS
+    </select>
+
+</mapper>

@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context-3.1.xsd
+                        http://www.springframework.org/schema/tx
+                        http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    
+    <!-- 自动扫描 -->
+    <context:component-scan base-package="com.heitian.ssm"/>
+
+    <!-- 第一种方式：加载一个properties文件 -->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="location" value="classpath:jdbc.properties"/>
+    </bean>
+
+
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource1" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driverClasss}"/>
+        <property name="url" value="${jdbc.jdbcUrl}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc.maxWait}"></property>
+    </bean>
+
+    <!-- 配置数据源 -->
+    <bean id="dataSource2" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc2.driverClasss}"/>
+        <property name="url" value="${jdbc2.jdbcUrl}"/>
+        <property name="username" value="${jdbc2.username}"/>
+        <property name="password" value="${jdbc2.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc2.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc2.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc2.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc2.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc2.maxWait}"></property>
+    </bean>
+
+
+    <!--#马鞍镇-->
+    <bean id="dataSource3" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc3.driverClasss}"/>
+        <property name="url" value="${jdbc3.jdbcUrl}"/>
+        <property name="username" value="${jdbc3.username}"/>
+        <property name="password" value="${jdbc3.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc3.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc3.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc3.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc3.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc3.maxWait}"></property>
+    </bean>
+
+    <!--齐贤镇-->
+    <bean id="dataSource4" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc4.driverClasss}"/>
+        <property name="url" value="${jdbc4.jdbcUrl}"/>
+        <property name="username" value="${jdbc4.username}"/>
+        <property name="password" value="${jdbc4.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc4.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc4.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc4.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc4.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc4.maxWait}"></property>
+    </bean>
+
+    <!--安昌镇-->
+    <bean id="dataSource5" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc5.driverClasss}"/>
+        <property name="url" value="${jdbc5.jdbcUrl}"/>
+        <property name="username" value="${jdbc5.username}"/>
+        <property name="password" value="${jdbc5.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc5.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc5.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc5.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc5.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc5.maxWait}"></property>
+    </bean>
+
+    <!--杨汛桥镇-->
+    <bean id="dataSource6" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc6.driverClasss}"/>
+        <property name="url" value="${jdbc6.jdbcUrl}"/>
+        <property name="username" value="${jdbc6.username}"/>
+        <property name="password" value="${jdbc6.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc6.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc6.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc6.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc6.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc6.maxWait}"></property>
+    </bean>
+
+    <!--福全镇-->
+    <bean id="dataSource7" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc7.driverClasss}"/>
+        <property name="url" value="${jdbc7.jdbcUrl}"/>
+        <property name="username" value="${jdbc7.username}"/>
+        <property name="password" value="${jdbc7.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc7.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc7.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc7.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc7.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc7.maxWait}"></property>
+    </bean>
+
+    <!--夏履镇-->
+    <bean id="dataSource8" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc8.driverClasss}"/>
+        <property name="url" value="${jdbc8.jdbcUrl}"/>
+        <property name="username" value="${jdbc8.username}"/>
+        <property name="password" value="${jdbc8.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc8.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc8.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc8.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc8.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc8.maxWait}"></property>
+    </bean>
+
+
+    <!--漓渚镇-->
+    <bean id="dataSource9" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc9.driverClasss}"/>
+        <property name="url" value="${jdbc9.jdbcUrl}"/>
+        <property name="username" value="${jdbc9.username}"/>
+        <property name="password" value="${jdbc9.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc9.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc9.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc9.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc9.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc9.maxWait}"></property>
+    </bean>
+
+    <!--兰亭镇-->
+    <bean id="dataSource10" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc10.driverClasss}"/>
+        <property name="url" value="${jdbc10.jdbcUrl}"/>
+        <property name="username" value="${jdbc10.username}"/>
+        <property name="password" value="${jdbc10.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc10.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc10.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc10.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc10.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc10.maxWait}"></property>
+    </bean>
+
+    <!--平水镇-->
+    <bean id="dataSource11" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc11.driverClasss}"/>
+        <property name="url" value="${jdbc11.jdbcUrl}"/>
+        <property name="username" value="${jdbc11.username}"/>
+        <property name="password" value="${jdbc11.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc11.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc11.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc11.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc11.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc11.maxWait}"></property>
+    </bean>
+
+    <!--王坛镇-->
+    <bean id="dataSource12" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc12.driverClasss}"/>
+        <property name="url" value="${jdbc12.jdbcUrl}"/>
+        <property name="username" value="${jdbc12.username}"/>
+        <property name="password" value="${jdbc12.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc12.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc12.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc12.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc12.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc12.maxWait}"></property>
+    </bean>
+
+    <!--稽东镇-->
+    <bean id="dataSource13" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc13.driverClasss}"/>
+        <property name="url" value="${jdbc13.jdbcUrl}"/>
+        <property name="username" value="${jdbc13.username}"/>
+        <property name="password" value="${jdbc13.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc13.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc13.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc13.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc13.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc13.maxWait}"></property>
+    </bean>
+
+    <!--湖塘街道-->
+    <bean id="dataSource14" class="org.apache.commons.dbcp.BasicDataSource"
+                 destroy-method="close">
+    <property name="driverClassName" value="${jdbc14.driverClasss}"/>
+    <property name="url" value="${jdbc14.jdbcUrl}"/>
+    <property name="username" value="${jdbc14.username}"/>
+    <property name="password" value="${jdbc14.password}"/>
+    <!-- 初始化连接大小 -->
+    <property name="initialSize" value="${jdbc14.initialSize}"></property>
+    <!-- 连接池最大数量 -->
+    <property name="maxActive" value="${jdbc14.maxActive}"></property>
+    <!-- 连接池最大空闲 -->
+    <property name="maxIdle" value="${jdbc14.maxIdle}"></property>
+    <!-- 连接池最小空闲 -->
+    <property name="minIdle" value="${jdbc14.minIdle}"></property>
+    <!-- 获取连接最大等待时间 -->
+    <property name="maxWait" value="${jdbc14.maxWait}"></property>
+    </bean>
+
+    <!--柯岩街道-->
+    <bean id="dataSource15" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc15.driverClasss}"/>
+        <property name="url" value="${jdbc15.jdbcUrl}"/>
+        <property name="username" value="${jdbc15.username}"/>
+        <property name="password" value="${jdbc15.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc15.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc15.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc15.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc15.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc15.maxWait}"></property>
+    </bean>
+    <!--高哥线上数据库-->
+    <bean id="dataSource16" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc16.driverClasss}"/>
+        <property name="url" value="${jdbc16.jdbcUrl}"/>
+        <property name="username" value="${jdbc16.username}"/>
+        <property name="password" value="${jdbc16.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc16.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc16.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc16.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc16.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc16.maxWait}"></property>
+    </bean>
+    <!--钱清-->
+    <bean id="dataSource17" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc17.driverClasss}"/>
+        <property name="url" value="${jdbc17.jdbcUrl}"/>
+        <property name="username" value="${jdbc17.username}"/>
+        <property name="password" value="${jdbc17.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc17.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc17.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc17.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc17.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc17.maxWait}"></property>
+    </bean>
+    <!--会计核算-->
+    <bean id="dataSource18" class="org.apache.commons.dbcp.BasicDataSource"
+          destroy-method="close">
+        <property name="driverClassName" value="${jdbc18.driverClasss}"/>
+        <property name="url" value="${jdbc18.jdbcUrl}"/>
+        <property name="username" value="${jdbc18.username}"/>
+        <property name="password" value="${jdbc18.password}"/>
+        <!-- 初始化连接大小 -->
+        <property name="initialSize" value="${jdbc18.initialSize}"></property>
+        <!-- 连接池最大数量 -->
+        <property name="maxActive" value="${jdbc18.maxActive}"></property>
+        <!-- 连接池最大空闲 -->
+        <property name="maxIdle" value="${jdbc18.maxIdle}"></property>
+        <!-- 连接池最小空闲 -->
+        <property name="minIdle" value="${jdbc18.minIdle}"></property>
+        <!-- 获取连接最大等待时间 -->
+        <property name="maxWait" value="${jdbc18.maxWait}"></property>
+    </bean>
+
+    <bean id="dataSource" class="com.heitian.ssm.Source.DynamicDataSource">
+        <property name="targetDataSources">
+            <map key-type="java.lang.String">
+                <entry key="dataSource1" value-ref="dataSource1"/>
+                <entry key="dataSource2" value-ref="dataSource2"/>
+                <entry key="dataSource3" value-ref="dataSource3"/>
+                <entry key="dataSource4" value-ref="dataSource4"/>
+                <entry key="dataSource5" value-ref="dataSource5"/>
+                <entry key="dataSource6" value-ref="dataSource6"/>
+                <entry key="dataSource7" value-ref="dataSource7"/>
+                <entry key="dataSource8" value-ref="dataSource8"/>
+                <entry key="dataSource9" value-ref="dataSource9"/>
+                <entry key="dataSource10" value-ref="dataSource10"/>
+                <entry key="dataSource11" value-ref="dataSource11"/>
+                <entry key="dataSource12" value-ref="dataSource12"/>
+                <entry key="dataSource13" value-ref="dataSource13"/>
+                <entry key="dataSource14" value-ref="dataSource14"/>
+                <entry key="dataSource15" value-ref="dataSource15"/>
+                <entry key="dataSource16" value-ref="dataSource16"/>
+                <entry key="dataSource17" value-ref="dataSource17"/>
+                <entry key="dataSource18" value-ref="dataSource18"/>
+            </map>
+        </property>
+        <!--默认数据源-->
+        <property name="defaultTargetDataSource" ref="dataSource1"/>
+    </bean>
+
+
+
+    <!-- mybatis和spring完美整合，不需要mybatis的配置映射文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 自动扫描mapping.xml文件 -->
+        <property name="mapperLocations" value="classpath:mapping/**/*.xml"></property>
+        <!--&lt;!&ndash; 自动扫描mapping.xml文件 &ndash;&gt;-->
+        <property name="plugins">
+            <array>
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <value>
+                            helperDialect=oracle
+                        </value>
+                    </property>
+                </bean>
+            </array>
+        </property>
+    </bean>
+
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.heitian.ssm.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+</beans>

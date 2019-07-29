@@ -1,0 +1,31 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.account.AccountConfigDao">
+
+     <!--帐套基础配置-->
+
+    <!--查看账簿-->
+    <select id="getAccountList" parameterType="java.util.Map" resultType="java.util.Map">
+          Select *  from c_account_config Where year=#{year} And power=#{power} And cbmunitid=#{cbmunitid}
+    </select>
+
+    <!--插入账簿-->
+    <insert id="addAccount" parameterType="java.util.Map" >
+        Insert Into c_account_config (year,cbmunitid,name,power,guid)
+            Values
+           (to_char(sysdate,'yyyy'),#{cbmunitid},#{name},#{power}, (Select nvl( Max(guid),0)+1 guid From c_account_config) )
+    </insert>
+
+
+    <!--删除账簿-->
+    <delete id="deleteAccount" parameterType="java.util.Map">
+       Delete from c_account_config Where guid=#{guid}
+    </delete>
+
+    <!--编辑账簿-->
+    <update id="updateAccount" parameterType="java.util.Map">
+        update  c_account_config set name=#{name}
+                where   guid=#{guid}
+    </update>
+
+
+</mapper>

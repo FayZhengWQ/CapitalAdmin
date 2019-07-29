@@ -1,0 +1,308 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.report.JbzcReportDao">
+    <!--从用友数据库查数据-->
+   <!-- <select id="getDataFrom18" parameterType="java.util.Map" resultType="com.heitian.ssm.model.report.JbzcReportModel">
+    Select a.gov_outlay_code,a.gov_outlay_name,a.is_lowest,sum(decode(length(a.outlay_code),
+        3,
+        (
+        select sum(t2.money) from
+        (select outlay_code,sum(decode(dr_cr,1,  stad_amt ,
+        -1,-stad_amt))  money from gl_vou_detail_ass b where  CO_CODE=#{CO_CODE}  and outlay_code != '*' and ACC_CODE like '710101%'  and  #{FIS_PERD}>=fis_perd  and FISCAL=#{FISCAL} group by outlay_code) t2 where t2.outlay_code like concat(a.outlay_code,'__')),
+        b.money) )money ,
+
+        sum(decode(length(a.outlay_code),
+        3,
+        (
+        select sum(t2.money) from
+        (select outlay_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b where  CO_CODE=#{CO_CODE}  and outlay_code != '*' and ACC_CODE like '710101%'  and  fis_perd=#{FIS_PERD}  and FISCAL=#{FISCAL} group by outlay_code) t2 where t2.outlay_code like concat(a.outlay_code,'__')),
+        b.money) )STAD_AMT
+
+        from  (select outlay_code,outlay_name,gov_outlay_code,gov_outlay_name,is_lowest from  gl_outlaytype  where CO_CODE=#{CO_CODE}   and FISCAL=#{FISCAL}  Group By outlay_code,outlay_name,gov_outlay_code,gov_outlay_name,is_lowest order by outlay_code) a
+        left join
+        ( select outlay_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where CO_CODE=#{CO_CODE}  and outlay_code !='*' and ACC_CODE  Like '710101%'  And  #{FIS_PERD}>=fis_perd and  FISCAL=#{FISCAL}   group by outlay_code  order by outlay_code )  b
+        on a.outlay_code=b.outlay_code
+
+         left join
+        ( select outlay_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where CO_CODE=#{CO_CODE}  and outlay_code !='*' and ACC_CODE  Like '710101%'   And  fis_perd=#{FIS_PERD} and  FISCAL=#{FISCAL}   group by outlay_code  order by outlay_code )  c
+        on a.outlay_code=c.outlay_code
+
+         Group By a.gov_outlay_code,a.gov_outlay_name,is_lowest order  by a.gov_outlay_code
+    </select>-->
+    <select id="getDataFrom18" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL GET_YYKJHS_JBZC_XZ(#{CO_CODE},#{FISCAL},#{FIS_PERD},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap9})}
+    </select>
+
+
+
+    <!--判断是否生成该月经济科目-->
+    <select id="isExitJbzc" resultType="java.lang.String">
+        select MIN(SETID) from C_REPORT_JBZC where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd}  and CO_CODE=#{co_code} GROUP BY SETID
+    </select>
+
+    <!--删除本地数据库这个月的数据-->
+    <delete id="deleteJbzc" >
+        delete from C_REPORT_JBZC where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE=#{co_code}
+    </delete>
+
+    <!--把用友数据库获取的数据插入到乡镇数据库-->
+    <insert id="addData">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index" >
+            INTO  C_REPORT_JBZC
+            (
+            GOV_OUTLAY_CODE,GOV_OUTLAY_NAME,STAD_AMT,XZ_STAD_AMT,FISCAL,FIS_PERD,CO_CODE,IS_LOWEST,SETID
+            )
+            values
+            (
+            #{item.GOV_OUTLAY_CODE},
+            #{item.GOV_OUTLAY_NAME},
+            #{item.STAD_AMT,jdbcType=VARCHAR},
+            #{item.XZ_STAD_AMT,jdbcType=VARCHAR},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.CO_CODE},
+            #{item.IS_LOWEST},
+            1
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--乡镇获取乡镇金额数据到前端-->
+    <select id="getJbzc" resultType="java.util.Map">
+
+     select * from(
+        Select to_char(ROWNUM) as ID,to_char(FISCAL) as FISCAL,to_char(FIS_PERD) as FIS_PERD,to_char(gov_OUTLAY_CODE) as gov_OUTLAY_CODE,
+               to_char(gov_OUTLAY_NAME) as GOV_OUTLAY_NAME,to_char(CO_CODE) as CO_CODE,STAD_AMT, decode(SETID,1,XZ_STAD_AMT,3,QCZ_STAD_AMT,5,QCZ_STAD_AMT) as MONEY,to_char(SETID) as SETID,
+               decode(length(GOV_OUTLAY_CODE),3,'true',5,'false') as isDisabled,IS_LOWEST  from C_REPORT_JBZC
+            Where  FISCAL=#{FISCAL}
+            And FIS_PERD=#{FIS_PERD}
+            And CO_CODE=#{CO_CODE}
+            order by gov_OUTLAY_CODE
+            )
+    </select>
+
+    <!--操作员获取区财政数据到前端-->
+    <select id="getData" resultType="java.util.Map">
+              select * from(
+        Select to_char(ROWNUM) as ID,to_char(FISCAL) as FISCAL,to_char(FIS_PERD) as FIS_PERD,to_char(gov_OUTLAY_CODE) as gov_OUTLAY_CODE,
+               to_char(gov_OUTLAY_NAME) as GOV_OUTLAY_NAME,to_char(CO_CODE) as CO_CODE,decode(SETID,1,XZ_STAD_AMT,3,QCZ_STAD_AMT,5,QCZ_STAD_AMT) as QCZ_STAD_AMT,to_char(SETID) as SETID,
+               decode(length(GOV_OUTLAY_CODE),3,'true',5,'false') as isDisabled ,IS_LOWEST from C_REPORT_JBZC Where FISCAL=#{FISCAL}
+            And FIS_PERD=#{FIS_PERD}
+            And CO_CODE=#{CO_CODE}
+            and SETID in (3,5)
+             order by gov_OUTLAY_CODE
+            )
+    </select>
+
+    <!--下载（含千分位）-->
+    <select id="getData2" resultType="java.util.Map">
+        Select '' as ID,'' as FISCAL,'' as FIS_PERD,'' as gov_OUTLAY_CODE,
+               '合计数' as gov_OUTLAY_NAME,'' as CO_CODE, to_char(sum(decode(SETID,1,STAD_AMT,3,STAD_AMT,5,STAD_AMT)),'FM999,999,999,999,990.00') as STAD_AMT,to_Char(sum(decode(SETID,1,XZ_STAD_AMT,3,QCZ_STAD_AMT,5,QCZ_STAD_AMT)),'FM999,999,999,999,990.00') as MONEY,'' as SETID,
+               'true' as isDisabled  from C_REPORT_JBZC
+            Where  FISCAL=#{FISCAL}
+            And FIS_PERD=#{FIS_PERD}
+            And CO_CODE=#{CO_CODE}
+            and length(gov_OUTLAY_CODE)=3
+            group by CO_CODE
+            Union all
+
+     Select to_char(ROWNUM) as ID, t.* from(
+        Select to_char(FISCAL) as FISCAL,to_char(FIS_PERD) as FIS_PERD,to_char(gov_OUTLAY_CODE) as gov_OUTLAY_CODE,
+               to_char(gov_OUTLAY_NAME),to_char(CO_CODE),to_char(STAD_AMT,'FM999,999,999,999,990.00') STAD_AMT, to_char(decode(SETID,1,XZ_STAD_AMT,3,QCZ_STAD_AMT,5,QCZ_STAD_AMT),'FM999,999,999,999,990.00') as MONEY,to_char(SETID) as SETID,
+               decode(length(GOV_OUTLAY_CODE),3,'true',5,'false') as isDisabled  from C_REPORT_JBZC
+            Where  FISCAL=#{FISCAL}
+            And FIS_PERD=#{FIS_PERD}
+            And CO_CODE=#{CO_CODE}
+
+            order by gov_OUTLAY_CODE
+            ) t Where   t.STAD_AMT Is Not Null   And  t.MONEY Is Not NUll
+    </select>
+
+
+
+    <!--乡镇对报表中的数据进行调整，更新XZ_STAD_AMT-->
+    <update id="updateXZMon">
+            Update C_REPORT_JBZC
+            set XZ_STAD_AMT=#{MONEY,jdbcType=VARCHAR}
+            where  FISCAL=#{FISCAL}
+            and FIS_PERD=#{FIS_PERD}
+            and CO_CODE=#{CO_CODE}
+            and GOV_OUTLAY_CODE=#{GOV_OUTLAY_CODE}
+    </update>
+
+    <!--乡镇将经济科目报表上报(状态：1–—>3)
+   * 将数据保存到数据库 并将金额填入XZ_STAD_AMT,QCZ_STAD_AMT,修改状态成3-->
+    <update id="report" >
+            Update C_REPORT_JBZC
+            set XZ_STAD_AMT=#{MONEY,jdbcType=VARCHAR},
+            QCZ_STAD_AMT=#{MONEY,jdbcType=VARCHAR},
+            SETID = '3'
+            where  FISCAL=#{FISCAL}
+            and FIS_PERD=#{FIS_PERD}
+            and CO_CODE=#{CO_CODE}
+            and GOV_OUTLAY_CODE=#{GOV_OUTLAY_CODE}
+    </update>
+
+    <!--李晓伟退回 清空QCZ_STAD_AMT字段值，状态3,5为1-->
+    <update id="clearQCZ">
+        update C_REPORT_JBZC
+        set QCZ_STAD_AMT='',
+            SETID = '1'
+        where FISCAL=#{FISCAL}
+          And FIS_PERD=#{FIS_PERD}
+          And CO_CODE=#{CO_CODE}
+          And GOV_OUTLAY_CODE=#{GOV_OUTLAY_CODE}
+    </update>
+
+
+
+    <!--操作员将基本支出科目报表上报(状态：3–—>5)
+   *后台将数据保存到QCZ_STAD_AMT中并修改SETID为5-->
+    <update id="qczReport" >
+            Update C_REPORT_JBZC
+            set QCZ_STAD_AMT=#{QCZ_STAD_AMT,jdbcType=VARCHAR},
+                SETID = '5'
+            where  FISCAL=#{FISCAL}
+            and FIS_PERD=#{FIS_PERD}
+            and CO_CODE=#{CO_CODE}
+            and GOV_OUTLAY_CODE=#{GOV_OUTLAY_CODE}
+    </update>
+
+    <!--李晓伟编辑经济科目月报(状态3)
+    ，对数据库QCZ_STAD_AMT进行调整-->
+    <update id="updateQCZ" >
+            Update C_REPORT_JBZC
+            set QCZ_STAD_AMT=#{QCZ_STAD_AMT,jdbcType=VARCHAR}
+            where  FISCAL=#{FISCAL}
+            and FIS_PERD=#{FIS_PERD}
+            and CO_CODE=#{CO_CODE}
+            and GOV_OUTLAY_CODE=#{GOV_OUTLAY_CODE}
+    </update>
+
+    <!--修改setid5为3-->
+    <update id="cancleConfirm" >
+            Update C_REPORT_JBZC
+                set SETID ='3',
+                QCZ_STAD_AMT = ''
+                where FISCAL=#{FISCAL}
+                And FIS_PERD=#{FIS_PERD}
+                And CO_CODE=#{CO_CODE}
+                And GOV_OUTLAY_CODE=#{GOV_OUTLAY_CODE}
+                And SETID = '5'
+    </update>
+
+    <!--判断已上报至几月-->
+    <select id="getMaxFis" resultType="java.lang.Integer">
+        select Max(FIS_PERD) as FIS_PERD From C_REPORT_JBZC where SETID='5' and CO_CODE=#{co_code} and FISCAL=#{fiscal}
+    </select>
+
+
+    <!--下载 有合计-->
+    <select id="getAllMoney" resultType="java.util.Map">
+     Select * from (
+      Select
+           GOV_OUTLAY_CODE,GOV_OUTLAY_NAME,0 id,Sum(ALLMONEY) ALLMONEY,
+           Sum(money1) money1,Sum(money2) money2,Sum(money3) money3,Sum(money4) money4,Sum(money5) money5,Sum(money6) money6,Sum(money7) money7,Sum(money8) money8,
+           Sum(money9) money9,Sum(money10) money10,Sum(money11) money11,Sum(money12) money12,Sum(money13) money13,Sum(money14) money14,Sum(money15) money15,Sum(money16) money16
+       From (
+            Select ''GOV_OUTLAY_CODE, ''GOV_OUTLAY_NAME,
+            decode(Sum( decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT)),0,'0.00',Sum( decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT)) ) As ALLMONEY,
+            decode(decode(CO_CODE,605001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE,605001,SUM(QCZ_STAD_AMT))) as money1,
+            decode(decode(CO_CODE,606001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 606001,SUM(QCZ_STAD_AMT)))As money2,
+            decode(decode(CO_CODE,607001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 607001,SUM(QCZ_STAD_AMT)))As money3,
+            decode(decode(CO_CODE,608001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 608001,SUM(QCZ_STAD_AMT)))As money4,
+            decode(decode(CO_CODE,609001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 609001,SUM(QCZ_STAD_AMT)))As money5,
+            decode(decode(CO_CODE,611001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 611001,SUM(QCZ_STAD_AMT)))As money6,
+            decode(decode(CO_CODE,612001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 612001,SUM(QCZ_STAD_AMT)))as money7,
+            decode(decode(CO_CODE,610001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 610001,SUM(QCZ_STAD_AMT)))As money8,
+            decode(decode(CO_CODE,613001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 613001,SUM(QCZ_STAD_AMT)))as money9,
+            decode(decode(CO_CODE,614001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 614001,SUM(QCZ_STAD_AMT)))as money10,
+            decode(decode(CO_CODE,615001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 615001,SUM(QCZ_STAD_AMT)))as money11,
+            decode(decode(CO_CODE,616001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 616001,SUM(QCZ_STAD_AMT)))as money12,
+            decode(decode(CO_CODE,601001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 601001,SUM(QCZ_STAD_AMT)))as money13,
+            decode(decode(CO_CODE,603001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 603001,SUM(QCZ_STAD_AMT)))as money14,
+            decode(decode(CO_CODE,602001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE, 602001,SUM(QCZ_STAD_AMT)))as money15,
+            decode(decode(CO_CODE,604001,SUM(QCZ_STAD_AMT)),null,'0.00',decode(CO_CODE,604001,SUM(QCZ_STAD_AMT)))as money16
+            From c_report_jbzc Where  FISCAL=#{FISCAL} And #{FIS_PERD}=FIS_PERD And length(GOV_OUTLAY_CODE)=3 Group By CO_CODE
+       )
+       Group By GOV_OUTLAY_CODE,GOV_OUTLAY_NAME
+
+       Union All
+
+        select GOV_OUTLAY_CODE, GOV_OUTLAY_NAME,row_number()over(order by GOV_OUTLAY_CODE) Id,
+        Sum(decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT)) As ALLMONEY,
+        sum(decode(CO_CODE, 605001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money1,
+        sum(decode(CO_CODE, 606001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money2,
+        sum(decode(CO_CODE, 607001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money3,
+        sum(decode(CO_CODE, 608001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money4,
+        sum(decode(CO_CODE, 609001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money5,
+        sum(decode(CO_CODE, 611001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money6,
+        sum(decode(CO_CODE, 612001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money7,
+        sum(decode(CO_CODE, 610001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money8,
+        sum(decode(CO_CODE, 613001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money9,
+        sum(decode(CO_CODE, 614001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money10,
+        sum(decode(CO_CODE, 615001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money11,
+        sum(decode(CO_CODE, 616001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money12,
+        sum(decode(CO_CODE, 601001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money13,
+        sum(decode(CO_CODE, 603001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money14,
+        sum(decode(CO_CODE, 602001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money15,
+        sum(decode(CO_CODE, 604001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money16
+        From  c_report_jbzc Where  FISCAL=#{FISCAL} And #{FIS_PERD}=FIS_PERD
+         Group By GOV_OUTLAY_CODE, GOV_OUTLAY_NAME
+
+)
+    </select>
+
+    <!--查看 无合计-->
+    <select id="getAllMoney2" resultType="java.util.Map">
+        select GOV_OUTLAY_CODE, GOV_OUTLAY_NAME,row_number()over(order by GOV_OUTLAY_CODE) Id,
+        Sum(decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT)) As ALLMONEY,
+        sum(decode(CO_CODE, 605001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money1,
+        sum(decode(CO_CODE, 606001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money2,
+        sum(decode(CO_CODE, 607001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money3,
+        sum(decode(CO_CODE, 608001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money4,
+        sum(decode(CO_CODE, 609001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money5,
+        sum(decode(CO_CODE, 611001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money6,
+        sum(decode(CO_CODE, 612001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money7,
+        sum(decode(CO_CODE, 610001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money8,
+        sum(decode(CO_CODE, 613001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money9,
+        sum(decode(CO_CODE, 614001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money10,
+        sum(decode(CO_CODE, 615001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money11,
+        sum(decode(CO_CODE, 616001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money12,
+        sum(decode(CO_CODE, 601001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money13,
+        sum(decode(CO_CODE, 603001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money14,
+        sum(decode(CO_CODE, 602001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money15,
+        sum(decode(CO_CODE, 604001 ,decode(QCZ_STAD_AMT,Null,0, QCZ_STAD_AMT),0))As money16
+        From  c_report_jbzc Where  FISCAL=#{FISCAL} And #{FIS_PERD}=FIS_PERD
+         Group By GOV_OUTLAY_CODE, GOV_OUTLAY_NAME
+    </select>
+
+
+    <select id="collect" resultType="java.util.Map">
+        select FISCAL,FIS_PERD,
+            decode(CO_CODE, 605002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money1,
+            decode(CO_CODE, 606002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money2,
+            decode(CO_CODE, 607002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money3,
+            decode(CO_CODE, 608002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money4,
+            decode(CO_CODE, 609002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money5,
+            decode(CO_CODE, 611002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money6,
+            decode(CO_CODE, 612002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money7,
+            decode(CO_CODE, 610002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money8,
+            decode(CO_CODE, 613002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money9,
+            decode(CO_CODE, 614002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money10,
+            decode(CO_CODE, 615002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money11,
+            decode(CO_CODE, 616002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money12,
+            decode(CO_CODE, 601002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money13,
+            decode(CO_CODE, 603002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money14,
+            decode(CO_CODE, 602002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money15,
+            decode(CO_CODE, 604002 ,DECODE(SETID,1,'未上报',3,'已上报',5,'已确认') )As money16
+        From  ${tableName}  Group By FISCAL,FIS_PERD,CO_CODE,SETID
+    </select>
+
+
+
+
+
+
+</mapper>

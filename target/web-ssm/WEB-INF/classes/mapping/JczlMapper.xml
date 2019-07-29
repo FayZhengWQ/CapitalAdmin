@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.JczlDao">
+    <resultMap id="JczlBaseMap" type="com.heitian.ssm.model.JczlBean">
+        <id column="ISBN_CODE" property="ISBN_CODE"></id>
+        <result column="CPROGRAMNAME" property="CPROGRAMNAME"></result>
+    </resultMap>
+
+    <!--单位-->
+    <select id="SelcetAllUnit" resultMap="JczlBaseMap">
+        select ISBN_CODE,GUID, CODE,NAME ,PARENT_GUID from jczl.enterprise
+               where (enabled = 1) AND (year = #{year}) AND ISLEAF=1 AND ENABLED=1
+               <if test="CUNITNAME !=''">
+                 and NAME =#{CUNITNAME}
+               </if>
+    </select>
+    <!--功能科目-->
+    <select id="SelectAllFun" resultMap="JczlBaseMap">
+        select ISBN_CODE, GUID,CODE,PARENT_GUID,LEVEL_NUM,NAME from jczl.functionsection
+                where (enabled = 1) AND (typeid = 1) AND (year = #{year}) and(3>=level_num) Order By isbn_code
+                <if test="CFUNCTIONNAME !=''">
+                    and NAME=#{CFUNCTIONNAME}
+                </if>
+    </select>
+    <!--部门经济科目-->
+    <select id="SelectAllEcon" resultMap="JczlBaseMap">
+       select ISBN_CODE,GUID,CODE,PARENT_GUID,NAME,ECOGOVGUID,LEVEL_NUM  from jczl.economysection
+                where (enabled = 1) AND (year = #{year}) and (3 >= level_num) and (ECOGOVGUID is not null)   Order By isbn_code
+                <if test="CECONOMYSECTIONNAME!=''">
+                    and  NAME=#{CECONOMYSECTIONNAME}
+                </if>
+    </select>
+    <!--政府经济科目-->
+    <select id="SelectAllEconGov" resultMap="JczlBaseMap">
+        select ISBN_CODE,GUID,CODE,PARENT_GUID,NAME,LEVEL_NUM,IN_CODE from jczl.economysectiongov
+                where (enabled = 1) AND (year =#{year})  and (3>=level_num)   Order By isbn_code
+                <if test="CECONOMYSECTIONGOVNAME!=''">
+                    and  NAME =#{CECONOMYSECTIONGOVNAME}
+                </if>
+    </select>
+
+    <!--资金来源-->
+    <select id="SelectAllResoure" resultMap="JczlBaseMap">
+        select ISBN_CODE,GUID,CODE,NAME from jczl.resourcecategory
+                where (enabled = 1) AND (year = #{year})  AND ISLEAF=1 AND ENABLED=1
+                <if test="CRESOURCENAME !=''">
+                   and NAME=#{CRESOURCENAME}
+                </if>
+    </select>
+    <!--指标类型-->
+    <select id="SelectAllBudget" resultMap="JczlBaseMap">
+        select ISBN_CODE, GUID,CODE,NAME  from jczl.budgetcategory
+                where (enabled = 1) AND (year = #{year})  AND ISLEAF=1 AND ENABLED=1
+                <if test="BUDGETCATEGORYNAME !=''">
+                    and NAME=#{BUDGETCATEGORYNAME}
+                </if>
+    </select>
+    <!--项目类型-->
+    <select id="SelectAllOptions" resultMap="JczlBaseMap">
+        select GUID,CODE,NAME from jczl.options
+                  where (type = 'ProgramType') AND (year = #{year})  AND ISLEAF=1 AND ENABLED=1
+        <if test="CPROGRAMTYPENAME !=''">
+            and NAME=#{CPROGRAMTYPENAME}
+        </if>
+    </select>
+    <!--科室-->
+    <select id="SelectAllDivision" resultMap="JczlBaseMap">
+         select GUID,CODE,NAME from jczl.division
+                  where (enabled = 1)   
+                  <if test="DGKKS !=''">
+                      and  NAME =#{DGKKS}
+                  </if>
+    </select>
+
+</mapper>

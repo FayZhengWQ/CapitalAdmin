@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<importFile>
+	<startRowNo>4</startRowNo>
+
+	<!--cellType 单元格类型-->
+
+	<!--(资产部类)科目名称-->
+	<cell>
+		<number>0</number>
+		<key>C_ACC_NAME</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--(资产部类)年初数-->
+	<cell>
+		<number>1</number>
+		<key>C_START_MONEY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--(资产部类)期末数-->
+	<cell>
+		<number>2</number>
+		<key>C_END_MONEY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--(负债部类)科目名称-->
+	<cell>
+		<number>3</number>
+		<key>D_ACC_NAME</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+	<!--(负债部类)年初数-->
+	<cell>
+		<number>4</number>
+		<key>D_START_MONEY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--(负债部类)期末数-->
+	<cell>
+		<number>5</number>
+		<key>D_END_MONEY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+</importFile>
+

@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.project.ProjectDao">
+    <resultMap id="ProjectBaseMap" type="com.heitian.ssm.model.project.Project"></resultMap>
+    <resultMap id="DprogQueryMap" type="com.heitian.ssm.model.QueryModel"></resultMap>
+
+
+    <select id="slectHome" resultType="java.util.Map">
+        Select TO_CHAR(sum(IMONEY),'FM999,999,999,999,990.00') IMONEY ,  CPROGTYPE,
+       Sum(IMONEY)/(Select Sum(IMONEY) From c_Prog Where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} ) IMONEY2
+          From c_prog Where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} Group By CPROGTYPE
+    </select>
+
+
+
+    <!--&lt;!&ndash;四种项目占比 总额&ndash;&gt;-->
+    <!--<select id="slectHome" resultType="java.util.Map">-->
+        <!--Select TO_CHAR(sum(IMONEY),'FM999,999,999,999,990.00') IMONEY ,-->
+	      <!--CPROGTYPE,-->
+	      <!--Sum(IMONEY)/(Select Sum(IMONEY) From c_Prog Where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} ) IMONEY2-->
+          <!--From c_prog Where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} Group By CPROGTYPE-->
+    <!--</select>-->
+
+    <!--&lt;!&ndash;公告公示率&ndash;&gt;-->
+        <!--Select count(*) from c_prog where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} and  NOTICE_STATE=1,-->
+        <!--(Select count(*) from c_prog where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} and  NOTICE_STATE=1/-->
+         <!--Select count(*) from c_prog where CBMUNITID=#{CBMUNITID} And IYEAR=#{IYEAR} )-->
+
+
+
+    <!--&lt;!&ndash;抽查巡查率&ndash;&gt;-->
+    <!--&lt;!&ndash;CHECK_STATE&ndash;&gt;-->
+                   <!--\-->
+    <!---->
+
+
+    <!--&lt;!&ndash;资金来源占比&ndash;&gt;-->
+
+
+
+    <!--查询自有资金 往来资金 上级专项 上级补助 -->
+    <select id="selectPlate" resultMap="ProjectBaseMap">
+        SELECT CXZPROGID,CXZPROGNAME,CXZPROGID||' '||CXZPROGNAME As CPROGRAMNAME,FILENO,CUNITID,CUNITNAME,
+        CUNITID||' '||CUNITNAME as CENTERPRISE,CFUNCTIONNAME,CFUNCTIONCODE,
+        CFUNCTIONCODE||' '||CFUNCTIONNAME as CFUNCTION ,CECONOMYSECTIONCODE,CECONOMYSECTIONNAME,
+        CECONOMYSECTIONCODE||' '||CECONOMYSECTIONNAME as CECONOMYSECTION,
+        CECONOMYSECTIONGOVCODE, CECONOMYSECTIONGOVNAME,CECONOMYSECTIONGOVCODE||' '||CECONOMYSECTIONGOVNAME as
+        CECONOMYSECTIONGOV,CBUDGETCATEGORYCODE,CBUDGETCATEGORYNAME,
+        CBUDGETCATEGORYCODE||' '||CBUDGETCATEGORYNAME as CBUDGETCATEGORY,CRESOURCECODE, CRESOURCENAME,
+        CRESOURCECODE||' '||CRESOURCENAME as CRESOURCE,CPROGRAMTYPECODE,CPROGRAMTYPENAME,
+        ENTERPRISEID ,SZTYPECODE,SZTYPENAME,SZTYPECODE||' '||SZTYPENAME as SZTYPE,DDATE,
+        TO_CHAR(IMONEY,'FM999,999,999,999,990.00') as IMONEY, decode(NOTICE_STATE,0,'未公开',1,'已公开') As
+        NOTICE_STATE,TRANSFER_STATE,CBMUNITID,SIGNED,IGPLANID,CBILLNO,IYEAR ,PNO
+        from C_PROG where C_PROG.IYEAR=#{IYEAR}
+        <if test="CPROGTYPE !=''">
+            and C_PROG.CPROGTYPE=#{CPROGTYPE}
+        </if>
+        <if test="CBMUNITID !='' and CBMUNITID !='null'">
+            and C_PROG.CBMUNITID=#{CBMUNITID}
+        </if>
+        <if test="FILENO !='undefined' and FILENO !=''and FILENO !='null'">
+            and C_PROG.FILENO=#{FILENO}
+        </if>
+        <if test="CXZPROGNAME !='undefined' and CXZPROGNAME !='' and CXZPROGNAME !='null'">
+            and C_PROG.CXZPROGNAME=#{CXZPROGNAME}
+        </if>
+        <if test="CFUNCTIONCODE !='undefined' and CFUNCTIONCODE !='' and CFUNCTIONCODE !='null'">
+            and C_PROG.CFUNCTIONCODE=#{CFUNCTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONCODE !='undefined' and CECONOMYSECTIONCODE !='' and CECONOMYSECTIONCODE !='null'">
+            and C_PROG.CECONOMYSECTIONCODE=#{CECONOMYSECTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONGOVCODE !='undefined' and CECONOMYSECTIONGOVCODE !='' and CECONOMYSECTIONGOVCODE !='null'">
+            and C_PROG.CECONOMYSECTIONGOVCODE=#{CECONOMYSECTIONGOVCODE}
+        </if>
+        <if test="CBUDGETCATEGORYCODE !='undefined' and CBUDGETCATEGORYCODE !='' and CBUDGETCATEGORYCODE !='null'">
+            and C_PROG.CBUDGETCATEGORYCODE=#{CBUDGETCATEGORYCODE}
+        </if>
+        <if test="CRESOURCECODE !='undefined' and CRESOURCECODE !='' and CRESOURCECODE !='null'">
+            and C_PROG.CRESOURCECODE=#{CRESOURCECODE}
+        </if>
+
+    </select>
+
+    <!--公告公示 抽查巡查 结转-->
+    <select id="selectAllDprog" resultMap="ProjectBaseMap">
+        SELECT CXZPROGID,CXZPROGNAME,CXZPROGID||' '||CXZPROGNAME As CPROGRAMNAME,FILENO,CUNITID,CUNITNAME,CUNITID||' '||CUNITNAME as CENTERPRISE,CFUNCTIONNAME,CFUNCTIONCODE,
+        CFUNCTIONCODE||' '||CFUNCTIONNAME as CFUNCTION ,CECONOMYSECTIONCODE,CECONOMYSECTIONNAME,CECONOMYSECTIONCODE||' '||CECONOMYSECTIONNAME as CECONOMYSECTION,
+        CECONOMYSECTIONGOVCODE, CECONOMYSECTIONGOVNAME,CECONOMYSECTIONGOVCODE||' '||CECONOMYSECTIONGOVNAME as
+        CECONOMYSECTIONGOV,CBUDGETCATEGORYCODE,CBUDGETCATEGORYNAME,
+        CBUDGETCATEGORYCODE||' '||CBUDGETCATEGORYNAME as CBUDGETCATEGORY,CRESOURCECODE, CRESOURCENAME, CRESOURCECODE||' '||CRESOURCENAME as CRESOURCE,CPROGRAMTYPECODE,CPROGRAMTYPENAME,
+        ENTERPRISEID ,SZTYPECODE,SZTYPENAME,SZTYPECODE||' '||SZTYPENAME as SZTYPE,DDATE,  cprogtype,
+        TO_CHAR(IMONEY,'FM999,999,999,999,990.00') as IMONEY, decode(NOTICE_STATE,0,'未公开',1,'已公开') As
+        NOTICE_STATE, decode(TRANSFER_STATE,0,'转指标',1,'已结转') As TRANSFER_STATE,CBMUNITID,CBMUNITNAME,SIGNED,IGPLANID,CBILLNO,IYEAR ,PNO,YEAR ,decode(CHECK_STATE,0,'未抽查','已抽查') as CHECK_STATE
+        from C_PROG where C_PROG.IYEAR=#{IYEAR} and CPROGTYPE !='往来资金项目'
+        <if test="CBMUNITID !='' and CBMUNITID !='null'">
+            and CBMUNITID=#{CBMUNITID,jdbcType=VARCHAR}
+        </if>
+        <if test="FILENO !='undefined' and FILENO !=''and FILENO !='null'">
+            and FILENO=#{FILENO}
+        </if>
+        <if test="CXZPROGNAME !='undefined' and CXZPROGNAME !='' and CXZPROGNAME !='null'">
+            and CXZPROGNAME=#{CXZPROGNAME}
+        </if>
+        <if test="CFUNCTIONCODE !='undefined' and CFUNCTIONCODE !='' and CFUNCTIONCODE !='null'">
+            and A.CFUNCTIONCODE=#{CFUNCTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONCODE !='undefined' and CECONOMYSECTIONCODE !='' and CECONOMYSECTIONCODE !='null'">
+            and A.CECONOMYSECTIONCODE=#{CECONOMYSECTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONGOVCODE !='undefined' and CECONOMYSECTIONGOVCODE !='' and CECONOMYSECTIONGOVCODE !='null'">
+            and A.CECONOMYSECTIONGOVCODE=#{CECONOMYSECTIONGOVCODE}
+        </if>
+        <if test="CBUDGETCATEGORYCODE !='undefined' and CBUDGETCATEGORYCODE !='' and CBUDGETCATEGORYCODE !='null'">
+            and A.CBUDGETCATEGORYCODE=#{CBUDGETCATEGORYCODE}
+        </if>
+        <if test="CRESOURCECODE !='undefined' and CRESOURCECODE !='' and CRESOURCECODE !='null'">
+            and A.CRESOURCECODE=#{CRESOURCECODE}
+        </if>
+    </select>
+
+    <select id="selectDprogCount" resultType="java.lang.Integer">
+        select COUNT(*) from C_PROG
+        <where>
+            <if test="CBMUNITID !='' and CBMUNITID !='null'">
+                CBMUNITID=#{CBMUNITID}
+            </if>
+            <if test="CBMUNITNAME !='' and CBMUNITNAME !='null'">
+                and CBMUNITNAME=#{CBMUNITNAME}
+            </if>
+            <if test="YEAR !='' and YEAR !='null' ">
+                and IYEAR=#{YEAR}
+            </if>
+            <if test="CPROGTYPE !=''">
+                and C_PROG.CPROGTYPE=#{CPROGTYPE}
+            </if>
+            <if test="TRANSFER_STATE !=''">
+                and C_PROG.TRANSFER_STATE=#{TRANSFER_STATE}
+            </if>
+            <if test="PAY_STATE !=''">
+                and C_PROG.PAY_STATE=#{PAY_STATE}
+            </if>
+            <if test="FILENO !='undefined' and FILENO !=''and FILENO !='null'">
+                and C_PROG.FILENO=#{FILENO}
+            </if>
+            <if test="CXZPROGNAME !='undefined' and CXZPROGNAME !='' and CXZPROGNAME !='null'">
+                and C_PROG.CXZPROGNAME=#{CXZPROGNAME}
+            </if>
+        </where>
+
+    </select>
+
+    <!--删除dprog-->
+    <delete id="deleteDprog" parameterType="com.heitian.ssm.model.project.Project">
+        DELETE FROM C_PROG where C_PROG.CXZPROGID=#{CXZPROGID} AND CXZPROGNAME=#{CXZPROGNAME} and CBMUNITID=#{CBMUNITID}
+        and IYEAR=#{IYEAR}
+        <if test="IGPLANID !='' and IGPLANID !='null'">
+            and IGPLANID=#{IGPLANID}
+        </if>
+
+        <if test="CBILLNO !='' and CBILLNO !='null' ">
+            and CBILLNO=#{CBILLNO}
+        </if>
+    </delete>
+
+    <!--修改dprog-->
+    <update id="updateDprog" parameterType="com.heitian.ssm.model.project.Project">
+        update C_PROG
+        set CXZPROGNAME=#{CXZPROGNAME},CUNITID=#{CUNITID},CUNITNAME=#{CUNITNAME},CPROGTYPE=#{CPROGTYPE},ENTERPRISEID=#{ENTERPRISEID},CFUNCTIONCODE=#{CFUNCTIONCODE},
+        CFUNCTIONNAME=#{CFUNCTIONNAME},CECONOMYSECTIONCODE=#{CECONOMYSECTIONCODE},CECONOMYSECTIONNAME=#{CECONOMYSECTIONNAME},
+        CECONOMYSECTIONGOVCODE=#{CECONOMYSECTIONGOVCODE},
+        CECONOMYSECTIONGOVNAME=#{CECONOMYSECTIONGOVNAME},CPROGRAMTYPECODE=#{CPROGRAMTYPECODE},CPROGRAMTYPENAME=#{CPROGRAMTYPENAME},
+        CBUDGETCATEGORYCODE=#{CBUDGETCATEGORYCODE},
+        CBUDGETCATEGORYNAME=#{CBUDGETCATEGORYNAME},CRESOURCECODE=#{CRESOURCECODE},
+        CRESOURCENAME=#{CRESOURCENAME},SZTYPECODE=#{SZTYPECODE} ,
+        SZTYPENAME=#{SZTYPENAME},FILENO=#{FILENO} ,CMEMO=#{CMEMO}
+        where CBMUNITID=#{CBMUNITID}  and CBMUNITNAME=#{CBMUNITNAME} and PNO=#{PNO}
+    </update>
+
+    <!--统计自有资金的数量-->
+    <select id="countProg" resultType="java.lang.Integer">
+           select  count(*) from C_PROG where IYEAR=#{IYEAR} and C_PROG.CBMUNITID=#{CBMUNITID} AND C_PROG.SIGNED is null
+    </select>
+
+    <!--project获取项目 -->
+    <!--project获取项目 -->
+    <select id="selectAllProject" parameterType="com.heitian.ssm.model.project.Project" resultMap="ProjectBaseMap">
+        Select substr(C.CPROGRAMNAME,1,instr(C.CPROGRAMNAME,' ') -1) As
+        CXZPROGID,substr(C.CPROGRAMNAME,instr(C.CPROGRAMNAME,' ')+1) As CXZPROGNAME,C.CPROGRAMNAME ,C.FILENO,
+        C.CENTERPRISECODE,
+        C.CENTERPRISENAME ,C.CENTERPRISECODE||' '|| C.CENTERPRISENAME as CENTERPRISE,
+        C.CFUNCTIONCODE,C.CFUNCTIONNAME,C.CFUNCTIONCODE||' '||C.CFUNCTIONNAME As
+        CFUNCTION,C.CECONOMYSECTIONCODE,C.CECONOMYSECTIONNAME,
+        C.CECONOMYSECTIONCODE ||' '||C.CECONOMYSECTIONNAME As CECONOMYSECTION,
+        C.CECONOMYSECTIONGOVCODE,C.CECONOMYSECTIONGOVNAME ,
+        C.CECONOMYSECTIONGOVCODE||' '||C.CECONOMYSECTIONGOVNAME As CECONOMYSECTIONGOV , C.CRESOURCECODE,C.CRESOURCENAME
+        , C.CRESOURCECODE||' '||C.CRESOURCENAME As CRESOURCE,
+        C.Sztype As SZTYPECODE,decode(C.Sztype,5,'公共财政预算',6,'政府性基金',11,'社保基金',12,'国有资本经营性') as SZTYPENAME,
+        C.CBUDGETCATEGORYCODE ,C.CBUDGETCATEGORYNAME,C.CBUDGETCATEGORYCODE||' '||C.CBUDGETCATEGORYNAME As
+        CBUDGETCATEGORY ,C.ENTERPRISEID,C.CPROGRAMTYPECODE,
+        C.CPROGRAMTYPENAME,C.CBUDGETCATEGORYNAME ,to_date(C.DDATE,'yyyy-MM-dd') As DDATE,C.SIGNED,
+        TO_CHAR(C.IMONEY,'FM999,999,999,999,990.00') as IMONEY ,C.IYEAR,C.IMONTH ,C.CBILLNO,C.IGPLANID
+        from
+        (  select * from  ${table}@firstop where  centerprisename like '%${SHORTNAME0}%') C
+        left join
+        xzzjjg.C_PROG on C.IGPLANID = xzzjjg.C_PROG.IGPLANID
+        where xzzjjg.C_PROG.IGPLANID is null
+        and C.SIGNED=-2
+        <if test="type == 2">
+            and SUBSTR(C.CFUNCTIONCODE,1,1)=2
+        </if>
+        <if test="type == 8">
+            and SUBSTR(C.CFUNCTIONCODE,1,2)=88
+        </if>
+        <if test="FILENO !='undefined' and FILENO !=''and FILENO !='null'">
+            and C.FILENO=#{FILENO}
+        </if>
+        <if test="CPROGRAMNAME !='undefined' and CPROGRAMNAME !='' and CPROGRAMNAME !='null'">
+            and C.CPROGRAMNAME=#{CPROGRAMNAME}
+        </if>
+        <if test="CFUNCTIONCODE !='undefined' and CFUNCTIONCODE !='' and CFUNCTIONCODE !='null'">
+            and C.CFUNCTIONCODE=#{CFUNCTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONCODE !='undefined' and CECONOMYSECTIONCODE !='' and CECONOMYSECTIONCODE !='null'">
+            and C.CECONOMYSECTIONCODE=#{CECONOMYSECTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONGOVCODE !='undefined' and CECONOMYSECTIONGOVCODE !='' and CECONOMYSECTIONGOVCODE !='null'">
+            and C.CECONOMYSECTIONGOVCODE=#{CECONOMYSECTIONGOVCODE}
+        </if>
+        <if test="CBUDGETCATEGORYCODE !='undefined' and CBUDGETCATEGORYCODE !='' and CBUDGETCATEGORYCODE !='null'">
+            and C.CBUDGETCATEGORYCODE=#{CBUDGETCATEGORYCODE}
+        </if>
+        <if test="CRESOURCECODE !='undefined' and CRESOURCECODE !='' and CRESOURCECODE !='null'">
+            and C.CRESOURCECODE=#{CRESOURCECODE}
+        </if>
+        union all
+        Select substr(C.CPROGRAMNAME,1,instr(C.CPROGRAMNAME,' ') -1) As
+        CXZPROGID,substr(C.CPROGRAMNAME,instr(C.CPROGRAMNAME,' ')+1) As CXZPROGNAME,C.CPROGRAMNAME,C.FILENO,
+        C.CENTERPRISECODE,
+        C.CENTERPRISENAME , C.CENTERPRISECODE||' '|| C.CENTERPRISENAME as CENTERPRISE,
+        C.CFUNCTIONCODE,C.CFUNCTIONNAME,C.CFUNCTIONCODE||' '||C.CFUNCTIONNAME As
+        CFUNCTION,C.CECONOMYSECTIONCODE,C.CECONOMYSECTIONNAME,
+        C.CECONOMYSECTIONCODE ||' '||C.CECONOMYSECTIONNAME As CECONOMYSECTION,
+        C.CECONOMYSECTIONGOVCODE,C.CECONOMYSECTIONGOVNAME ,
+        C.CECONOMYSECTIONGOVCODE||' '||C.CECONOMYSECTIONGOVNAME As CECONOMYSECTIONGOV , C.CRESOURCECODE,C.CRESOURCENAME
+        , C.CRESOURCECODE||' '||C.CRESOURCENAME As CRESOURCE,
+        C.Sztype As SZTYPECODE,decode(C.Sztype,5,'公共财政预算',6,'政府性基金',11,'社保基金',12,'国有资本经营性') as SZTYPENAME,
+        C.CBUDGETCATEGORYCODE ,C.CBUDGETCATEGORYNAME,C.CBUDGETCATEGORYCODE||' '||C.CBUDGETCATEGORYNAME As
+        CBUDGETCATEGORY ,C.ENTERPRISEID,C.CPROGRAMTYPECODE,
+        C.CPROGRAMTYPENAME,C.CBUDGETCATEGORYNAME ,to_date(C.DDATE,'yyyy-MM-dd') As DDATE,C.SIGNED,
+        TO_CHAR(C.IMONEY,'FM999,999,999,999,990.00') as IMONEY ,C.IYEAR,C.IMONTH ,C.CBILLNO,C.IGPLANID
+        from
+        (SELECT * from  ${table}@firstop   where crecname like '%${SHORTNAME}%' or CRECNAME like '%${SHORTNAME1}%' ) C left join
+        xzzjjg.C_PROG on C.CBILLNO = xzzjjg.C_PROG.CBILLNO
+        where xzzjjg.C_PROG.CBILLNO is null
+        and C.SIGNED=-4
+        and C.crecbankno is not null
+
+        <if test="type == 2">
+            and SUBSTR(C.CFUNCTIONCODE,1,1)=2
+        </if>
+        <if test="type == 8">
+            and SUBSTR(C.CFUNCTIONCODE,1,2)=88
+        </if>
+        <if test="FILENO !='undefined' and FILENO !=''and FILENO !='null'">
+            and C.FILENO=#{FILENO}
+        </if>
+        <if test="CPROGRAMNAME !='undefined' and CPROGRAMNAME !='' and CPROGRAMNAME !='null'">
+            and C.CPROGRAMNAME=#{CPROGRAMNAME}
+        </if>
+        <if test="CFUNCTIONCODE !='undefined' and CFUNCTIONCODE !='' and CFUNCTIONCODE !='null'">
+            and C.CFUNCTIONCODE=#{CFUNCTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONCODE !='undefined' and CECONOMYSECTIONCODE !='' and CECONOMYSECTIONCODE !='null'">
+            and C.CECONOMYSECTIONCODE=#{CECONOMYSECTIONCODE}
+        </if>
+        <if test="CECONOMYSECTIONGOVCODE !='undefined' and CECONOMYSECTIONGOVCODE !='' and CECONOMYSECTIONGOVCODE !='null'">
+            and C.CECONOMYSECTIONGOVCODE=#{CECONOMYSECTIONGOVCODE}
+        </if>
+        <if test="CBUDGETCATEGORYCODE !='undefined' and CBUDGETCATEGORYCODE !='' and CBUDGETCATEGORYCODE !='null'">
+            and C.CBUDGETCATEGORYCODE=#{CBUDGETCATEGORYCODE}
+        </if>
+        <if test="CRESOURCECODE !='undefined' and CRESOURCECODE !='' and CRESOURCECODE !='null'">
+            and C.CRESOURCECODE=#{CRESOURCECODE}
+        </if>
+
+    </select>
+    <!--project项目数量-->
+    <select id="selectProjectCount" resultType="java.lang.Integer">
+        select COUNT (*)
+        from REPORTTABLE2018 left join
+        C_PROG on REPORTTABLE2018.CPROGRAMNAME = C_PROG.CXZPROGID||' '||C_PROG.CXZPROGNAME
+        where C_PROG.CXZPROGID is null
+        and SUBSTR(REPORTTABLE2018.CFUNCTIONCODE,1,1)= #{type}
+        <if test="CENTERPRISECODE !='' and CENTERPRISECODE !='null'">
+            and REPORTTABLE2018.CENTERPRISECODE=#{CENTERPRISECODE}
+        </if>
+        <if test="FILENO !='undefined' and FILENO !='' and FILENO !='null'">
+            and REPORTTABLE2018.FILENO=#{FILENO}
+        </if>
+        <if test="CPROGRAMNAME !='undefined' and CPROGRAMNAME !='' and CPROGRAMNAME !='null'">
+            and REPORTTABLE2018.CPROGRAMNAME=#{CPROGRAMNAME}
+        </if>
+
+    </select>
+
+    <!--添加项目-->
+  <!--  <insert id="addProject" parameterType="com.heitian.ssm.model.project.Project" useGeneratedKeys="true">
+
+
+        <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="PNO">
+            SELECT DPROG_PNO_autoinc.nextval from dual
+        </selectKey>
+
+        INSERT INTO C_PROG
+        (CXZPROGID,CXZPROGNAME,DDATE,CUNITID,CUNITNAME,CPROGTYPE,ENTERPRISEID,CFUNCTIONCODE,CFUNCTIONNAME,CECONOMYSECTIONCODE,
+        CECONOMYSECTIONNAME,CECONOMYSECTIONGOVCODE,CECONOMYSECTIONGOVNAME,CPROGRAMTYPECODE,CPROGRAMTYPENAME,CBUDGETCATEGORYCODE,CBUDGETCATEGORYNAME,CRESOURCECODE,CRESOURCENAME,SZTYPECODE,
+        SZTYPENAME,IMONEY,FILENO,CMEMO,NOTICE_STATE,TRANSFER_STATE,CBMUNITID,CHECK_STATE,GDATE,PAY_STATE,CBMUNITNAME,YEAR,MONTH,IYEAR,IMONTH,IGPLANID,CBILLNO,SIGNED,PNO)
+        VALUES
+        (#{CXZPROGID,jdbcType=VARCHAR},#{CXZPROGNAME,jdbcType=VARCHAR},#{DDATE,jdbcType=VARCHAR},#{CUNITID,jdbcType=VARCHAR},
+        #{CUNITNAME,jdbcType=VARCHAR},#{CPROGTYPE,jdbcType=VARCHAR},#{ENTERPRISEID,jdbcType=VARCHAR},#{CFUNCTIONCODE,jdbcType=VARCHAR},
+        #{CFUNCTIONNAME,jdbcType=VARCHAR},#{CECONOMYSECTIONCODE,jdbcType=VARCHAR}, #{CECONOMYSECTIONNAME,jdbcType=VARCHAR},
+        #{CECONOMYSECTIONGOVCODE,jdbcType=VARCHAR},#{CECONOMYSECTIONGOVNAME,jdbcType=VARCHAR},#{CPROGRAMTYPECODE,jdbcType=VARCHAR},
+        #{CPROGRAMTYPENAME,jdbcType=VARCHAR},#{CBUDGETCATEGORYCODE,jdbcType=VARCHAR},#{CBUDGETCATEGORYNAME,jdbcType=VARCHAR},
+        #{CRESOURCECODE,jdbcType=VARCHAR},#{CRESOURCENAME,jdbcType=VARCHAR},#{SZTYPECODE,jdbcType=VARCHAR},
+        #{SZTYPENAME,jdbcType=VARCHAR},#{IMONEY,jdbcType=VARCHAR},#{FILENO,jdbcType=VARCHAR},#{CMEMO,jdbcType=VARCHAR},0,0,#{CBMUNITID,jdbcType=VARCHAR},0,#{GDATE,jdbcType=VARCHAR}
+        ,0,#{CBMUNITNAME,jdbcType=VARCHAR},#{YEAR,jdbcType=VARCHAR},#{MONTH,jdbcType=VARCHAR},#{IYEAR,jdbcType=VARCHAR},#{IMONTH,jdbcType=VARCHAR},#{IGPLANID,jdbcType=VARCHAR},#{CBILLNO,jdbcType=VARCHAR},
+        #{SIGNED,jdbcType=VARCHAR},#{PNO})
+    </insert>-->
+
+    <!--获取项目详情-->
+    <select id="selectProjectDeatil" parameterType="com.heitian.ssm.model.project.TransferModel" resultMap="ProjectBaseMap">
+
+        SELECT  * from C_PROG
+              where CXZPROGID=#{CXZPROGID}  and  CBMUNITID=#{CBMUNITID}  and CXZPROGNAME=#{CXZPROGNAME}
+
+    </select>
+
+    <!--修改Notice状态-->
+    <update id="UpdateNoticeState">
+        update  C_PROG
+            set C_PROG.NOTICE_STATE=1
+            where   C_PROG.PNO=#{PNO}
+
+    </update>
+
+    <!--修改Check状态-->
+    <update id="UpdateCheckState">
+          update  C_PROG
+            set C_PROG.CHECK_STATE=1
+            where
+                C_PROG.PNO=#{PNO}
+    </update>
+
+
+
+    <!--//***************************************************************可开委接口*************************************************//-->
+
+    <insert id="addkkwproject" >
+
+       INSERT INTO C_PROG_SON
+        (CXZPROGID,CXZPROGNAME,DDATE,CUNITID,CUNITNAME,CPROGTYPE,ENTERPRISEID,CFUNCTIONCODE,
+        CFUNCTIONNAME,CECONOMYSECTIONCODE,CECONOMYSECTIONNAME,CECONOMYSECTIONGOVCODE,CECONOMYSECTIONGOVNAME,
+        CPROGRAMTYPECODE,CPROGRAMTYPENAME,CBUDGETCATEGORYCODE,CBUDGETCATEGORYNAME,CRESOURCECODE,CRESOURCENAME,
+        SZTYPECODE,SZTYPENAME,IMONEY,FILENO,CMEMO,NOTICE_STATE,TRANSFER_STATE,CBMUNITID,CHECK_STATE,GDATE,
+        PAY_STATE,CBMUNITNAME,YEAR,MONTH,IYEAR,IMONTH,IGPLANID,CBILLNO,SIGNED,PNO)
+        VALUES
+        (#{cxzprogid,jdbcType=VARCHAR},#{cxzprogname,jdbcType=VARCHAR}, to_date(#{ddate,jdbcType=VARCHAR},'yyyy-mm-dd'),
+        #{cunitid,jdbcType=VARCHAR},#{cunitname,jdbcType=VARCHAR},#{cprogtype,jdbcType=VARCHAR},
+        #{enterpriseid,jdbcType=VARCHAR},#{cfunctioncode,jdbcType=VARCHAR},#{cfunctionname,jdbcType=VARCHAR},
+        #{ceconomysectioncode,jdbcType=VARCHAR}, #{ceconomysectionname,jdbcType=VARCHAR},#{ceconomysectiongovcode,jdbcType=VARCHAR},
+        #{ceconomysectiongovname,jdbcType=VARCHAR},#{cprogramtypecode,jdbcType=VARCHAR},#{cprogramtypename,jdbcType=VARCHAR},
+        #{cbudgetcategorycode,jdbcType=VARCHAR},#{cbudgetcategoryname,jdbcType=VARCHAR},#{cresourcecode,jdbcType=VARCHAR},
+        #{cresourcename,jdbcType=VARCHAR},#{sztypecode,jdbcType=VARCHAR},#{sztypename,jdbcType=VARCHAR},
+        #{imoney,jdbcType=VARCHAR},#{fileno,jdbcType=VARCHAR},#{cmemo,jdbcType=VARCHAR},
+        0,0,#{cbmunitid,jdbcType=VARCHAR},
+        0,#{gdate,jdbcType=VARCHAR},0,
+        #{cbmunitname,jdbcType=VARCHAR},#{year,jdbcType=VARCHAR},#{month,jdbcType=VARCHAR},
+        #{iyear,jdbcType=VARCHAR},#{imonth,jdbcType=VARCHAR},#{igplanid,jdbcType=VARCHAR},
+        #{cbillno,jdbcType=VARCHAR},#{signed,jdbcType=VARCHAR},#{pno})
+
+    </insert>
+
+    <!--连接DataSource2，获取经济科目编码名称-->
+    <select id="getCECONOMYSECTION" parameterType="java.util.Map" resultType="java.util.Map">
+        Select t2.isbn_code ,t2.name From jczl.economysection t2 Where t2.year = #{YEAR} And t2.ecogovguid In(
+        Select t.guid From jczl.economysectiongov t  Where t.year = #{YEAR} And isbn_code=#{ISBN_CODE})
+    </select>
+
+
+    <!--******************************************xmk重构*************************************************-->
+    <!--新增项目-->
+    <insert id="addProject">
+        INSERT INTO C_XMK_ITEM (
+          GUID,NAME,STANDARD_CODE,ISLEAF,BUDGETTYPE,SPANTYPE,ITEMSOURCESCODE,DECLAREDATE,STARTYEAR,ENDYEAR,
+          MANAGER,ITEMTYPE,ITEMCAUSE,CONTENT,ITEMBRIEAF,ISACCEPT,EID,EID_ISBN,YEAR,CBMUNITID,MONEY
+        ) VALUES(
+          (SELECT NVL(MAX(GUID),0)+1 FROM C_XMK_ITEM ),#{NAME},#{STANDARD_CODE},#{ISLEAF},#{BUDGETTYPE},#{SPANTYPE},
+          #{ITEMSOURCESCODE},TO_DATE(#{DECLAREDATE},'yyyy-MM-dd'),#{STARTYEAR},#{ENDYEAR},
+          #{MANAGER},#{ITEMTYPE},#{ITEMCAUSE},#{CONTENT},#{ITEMBRIEAF},#{ISACCEPT},#{EID},#{EID_ISBN},
+          #{YEAR},#{CBMUNITID},#{MONEY,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!--查找项目GUID-->
+    <select id="getXmGuid">
+        select MAX(GUID) from C_XMK_ITEM WHERE CBMUNITID=#{CBMUNITID} AND YEAR = #{YEAR}
+    </select>
+
+    <!--添加附件-->
+    <insert id="addFile">
+        INSERT INTO C_XMK_FILE(
+        GUID,PATH,CREATE_TIME,OPERATOR,XMK_GUID,FILENAME
+        )VALUES(
+       ( SELECT NVL(MAX(GUID),0)+1 FROM C_XMK_FILE) ,#{PATH},TO_DATE(TO_CHAR(SYSDATE,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),#{OPERATOR},#{XMK_GUID},#{FILENAME}
+        )
+    </insert>
+
+    <!--查询项目列表-->
+    <select id="getProject" resultType="java.util.Map">
+        SELECT * FROM ((SELECT GUID,NAME,STANDARD_CODE,ISLEAF,DECODE(BUDGETTYPE,1,'本年追加预算',2,'本年年初预算','下年年初预算')BUDGETTYPE,
+        DECODE(SPANTYPE,1,'当年项目',2,'常年项目','跨年度项目') SPANTYPE,DECODE(ITEMSOURCESCODE,0,'自建项目',1,'上级补助项目','转出农经办项目') ITEMSOURCESCODE,
+        TO_CHAR(DECLAREDATE,'yyyy-MM-dd') DECLAREDATE,STARTYEAR,ENDYEAR,
+        MANAGER,ITEMTYPE,ITEMCAUSE,CONTENT,ITEMBRIEAF,DECODE(ISACCEPT,0,'单位录入的备选项目',1,'财政已纳入的项目',2,'财政不予纳入的项目','财政退回的项目') ISACCEPT,EID,EID_ISBN,
+        YEAR,CBMUNITID,MONEY FROM C_XMK_ITEM  WHERE CBMUNITID=#{CBMUNITID} AND YEAR=#{YEAR}) A
+        LEFT JOIN
+        (SELECT XMK_GUID,WMSYS.WM_CONCAT(FILENAME) FILENAME FROM C_XMK_FILE GROUP BY XMK_GUID) B
+        ON A.GUID = B.XMK_GUID)
+        <where>
+            <if test="MONEY!='' and MONEY!=null">
+                and MONEY &gt;= #{MONEY}
+            </if>
+            <if test="ISACCEPT!='' and ISACCRPT !=null">
+                and ISACCEPT = #{ISACCEPT}
+            </if>
+            <if test="DECLAREDATE!='' and DECLAREDATE !=null">
+                and DECLAREDATE = TO_CHAR(#{DECLAREDATE})
+            </if>
+        </where>
+        ORDER BY GUID DESC
+    </select>
+
+    <!--编辑项目-->
+    <update id="editProject">
+        UPDATE C_XMK_ITEM SET NAME=#{NAME},BUDGETTYPE=#{BUDGETTYPE},SPANTYPE=#{SPANTYPE},
+        ITEMSOURCESCODE=#{ITEMSOURCESCODE},DECLAREDATE=TO_DATE(#{DECLAREDATE},'yyyy-MM-dd'),
+        STARTYEAR=#{STARTYEAR},ENDYEAR=#{ENDYEAR},
+        MANAGER=#{MANAGER},ITEMTYPE=#{ITEMTYPE},ITEMCAUSE=#{ITEMCAUSE},CONTENT=#{CONTENT},
+         ITEMBRIEAF = #{ITEMBRIEAF},ISACCEPT=#{ISACCEPT},EID=#{EID},EID_ISBN=#{EID_ISBN}
+         WHERE CBMUNITID=#{CBMUNITID} AND GUID = #{GUID}
+    </update>
+
+    <!--根据项目GUID 获取附件列表-->
+    <select id="getFileList" resultType="java.util.Map">
+        SELECT * FROM C_XMK_FILE WHERE XMK_GUID=#{GUID}
+    </select>
+
+    <!--删除附件-->
+    <delete id="deleteFile">
+        DELETE FROM C_XMK_FILE WHERE GUID IN
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.GUID}
+        </foreach>
+    </delete>
+
+    <!--删除项目-->
+    <delete id="deleteProject">
+        DELETE FROM C_XMK_ITEM WHERE GUID = #{GUID}
+    </delete>
+
+
+
+
+</mapper>

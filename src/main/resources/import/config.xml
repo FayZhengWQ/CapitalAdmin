@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<importFile>
+	<startRowNo>2</startRowNo>
+	<cell>
+		<number>0</number>
+		<key>CXZPROGNAME</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--项目文号-->
+	<cell>
+		<number>1</number>
+		<key>FILENO</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--单位名称-->
+	<cell>
+		<number>2</number>
+		<key>CENTERPRISE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--功能科目-->
+	<cell>
+		<number>3</number>
+		<key>CFUNCTION</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--部门经济科目-->
+	<cell>
+		<number>4</number>
+		<key>CECONOMYSECTION</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+	<!--资金来源-->
+	<cell>
+		<number>5</number>
+		<key>CRESOURCE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--指标类型-->
+	<cell>
+		<number>6</number>
+		<key>CBUDGETCATEGORY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+	
+	<!--项目类型-->
+	<cell>
+		<number>7</number>
+		<key>CPROGRAMTYPE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--金额-->
+	<cell>
+		<number>8</number>
+		<key>IMONEY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+	<!--项目生成时间-->
+	<cell>
+		<number>9</number>
+		<key>DDATE</key>
+		<cellType>Date</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	
+
+
+</importFile>
+

@@ -1,0 +1,34 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.project.CapitalDao">
+
+    <resultMap id="CapialBaseMap" type="com.heitian.ssm.model.project.CapitalModel">
+
+    </resultMap>
+
+    <select id="selectCapital" resultMap="CapialBaseMap">
+
+        Select A.CXZPROGNAME,A.CBMUNITNAME,
+        C.projecttype1,C.projecttype2,C.projecttype3,C.projecttype4,
+        C.SUBSIDYCONTENT,TO_CHAR(A.IMONEY,'FM999,999,999,999,990.00') as IMONEY,
+        A.DDATE,A.DDATE As  GDATE,A.DDATE As date1,to_char(to_date(DDATE,'YYYY-MM-DD')+10,'yyyy-MM-dd') As date2,
+        to_char(B.START_DATE,'yyyy-MM-dd') START_DATE,B.CANNOUNCETYPE,
+        to_char(C.DCHECKDATE,'yyyy-mm-dd') DCHECKDATE,C.DCHECKRY,C.DCHECKPJ,C.FORMNO
+        from C_PROG A
+        Left Outer join C_PROG_ANNOUNCEMENT B
+        ON A.PNO=B.PNO
+        Left Outer join C_PROG_CHECK C ON A.PNO=C.PNO
+        Left Outer join C_PROGS D on A.PNO=D.PNO
+        Where  A.IYEAR=#{IYEAR} and A.CPROGTYPE !='往来资金项目'
+        <if test="CBMUNITID!=1">
+             and  A.CBMUNITID=#{CBMUNITID}
+        </if>
+        <if test="FILENO !='undefined' and FILENO !=''and FILENO !='null'">
+            and A.FILENO=#{FILENO}
+        </if>
+        <if test="CXZPROGNAME !='undefined' and CXZPROGNAME !='' and CXZPROGNAME !='null'">
+            and A.CXZPROGNAME=#{CXZPROGNAME}
+        </if>
+
+
+    </select>
+</mapper>

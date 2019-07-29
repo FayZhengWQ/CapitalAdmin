@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.project.CheckDao">
+    <resultMap id="CheckBaseMap" type="com.heitian.ssm.model.project.CheckModel">
+    </resultMap>
+    
+    
+    <!--检查CXZENTERPRISEID是否存在-->
+    <select id="IsCheck" resultType="java.lang.Integer">
+
+        select count(*) from C_PROG_CHECK where CXZPROGID=#{CXZPROGID} and CXZPROGNAME#{CXZPROGNAME} and  CBMUNITID=#{CBMUNITID} and IYEAR#{IYEAR}
+
+        <if test="SIGNED !=''">
+            and SIGNED=#{SIGNED}
+        </if>
+        <if test="IGPLANID !=''">
+            and IGPLANID=#{IGPLANID}
+        </if>
+
+        <if test="CBILLNO !=''">
+            and CBILLNO=#{CBILLNO}
+        </if>
+
+
+    </select>
+
+
+   <!--添加抽查单-->
+    <insert id="insertCheck" parameterType="com.heitian.ssm.model.project.CheckModel" useGeneratedKeys="true" >
+
+        <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="NO">
+            SELECT DPROG_CHECK_NO_autoinc.nextval   from dual
+        </selectKey>
+
+        INSERT INTO C_PROG_CHECK (CXZPROGID,CXZPROGNAME,DCHECKDATE,DCHECKPJ,DCHECKRY,CBMUNITID,CBMUNITNAME,SUBSIDYCONTENT, PROJECTTYPE1,PROJECTTYPE2,PROJECTTYPE3,PROJECTTYPE4,YEAR,MONTH,PNO,FORMNO) VALUES
+               (#{CXZPROGID},#{CXZPROGNAME},to_Date(#{DCHECKDATE},'yyyy-MM-dd'),#{DCHECKPJ},#{DCHECKRY},#{CBMUNITID},#{CBMUNITNAME},
+                #{SUBSIDYCONTENT},#{PROJECTTYPE1},#{PROJECTTYPE2},#{PROJECTTYPE3},#{PROJECTTYPE4},
+                #{YEAR},#{MONTH},#{PNO},(select #{SHORTNAME}||''||count(*) from C_PROG_CHECK where CBMUNITID=#{CBMUNITID} and YEAR=#{YEAR}))
+    </insert>
+
+    <select id="selectCheck" resultMap="CheckBaseMap">
+        select DCHECKDATE,DCHECKRY,DCHECKPJ,PNO,FORMNO,IYEAR from C_PROG_CHECK where  CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME} and PNO=#{PNO}
+
+
+    </select>
+
+    <select id="SelectCheckId" resultMap="CheckBaseMap">
+        select * from  C_PROG_CHECK where PNO =#{PNO}  and YEAR=#{YEAR}  and CBMUNITID=#{CBMUNITID}
+    </select>
+
+
+
+    <!--保存文本-->
+    <update id="UpdateCheckDoc"  parameterType="com.heitian.ssm.model.project.CheckModel">
+        UPDATE C_PROG_CHECK
+               set BCHECKDOC=#{BCHECKDOC}
+               where PNO=#{PNO}
+    </update>
+
+
+    <!--刷-->
+    <insert id="falsh" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT INTO C_PROG_CHECK
+        (CXZPROGID,
+         CXZPROGNAME,
+         DCHECKDATE,
+         DCHECKPJ,
+         DCHECKRY,
+         CBMUNITID,
+         CBMUNITNAME,
+         SUBSIDYCONTENT,
+         YEAR,
+         MONTH,
+         GDATE,
+         PNO,
+        PROJECTTYPE1,
+        PROJECTTYPE2,
+        PROJECTTYPE3,
+        PROJECTTYPE4,
+         FORMNO)
+        select A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.CXZPROGID},
+            #{item.CXZPROGNAME},
+            to_Date(#{item.DCHECKDATE},'yyyy-MM-dd hh24:mi:ss'),
+            #{item.DCHECKPJ},
+            #{item.DCHECKRY},
+            #{item.CBMUNITID},
+            #{item.CBMUNITNAME},
+            #{item.SUBSIDYCONTENT},
+            to_char(sysdate,'yyyy'),
+            to_char(sysdate,'mm'),
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            #{item.PNO},
+            #{item.PROJECTTYPE1},
+            #{item.PROJECTTYPE2},
+            #{item.PROJECTTYPE3},
+            #{item.PROJECTTYPE4},
+            (select #{item.SHORTNAME}||''||(count(*)+#{index}+1) from C_PROG_CHECK where CBMUNITID=#{item.CBMUNITID} and YEAR=#{item.YEAR})
+            from dual
+        </foreach>
+        ) A
+
+    </insert>
+
+
+    <select id="selectCount">
+        select count(*) from C_PROG_CHECK where CBMUNITID=#{CBMUNITID} and YEAR=#{YEAR}
+    </select>
+
+</mapper>

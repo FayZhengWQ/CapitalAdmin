@@ -1,0 +1,944 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.report.ReportGovDao">
+
+    <!--[对个人和家庭的补助明细表]本地库书否存在当月数据-->
+    <select id="isExitAllow" resultType="java.lang.Integer">
+        select Count(*) from C_REPORT_SUBSIDY where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </select>
+
+    <!--[对个人和家庭的补助明细表]删除本地库当月数据-->
+    <delete id="deleteAllow">
+        delete from C_REPORT_SUBSIDY where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </delete>
+
+    <!--[对个人和家庭的补助明细表]调用存储过程-->
+    <select id="doAllow" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL get_yykjhs_subsidy (#{co_code},#{fiscal},#{fis_perd},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap4})}
+    </select>
+
+    <!--[对个人和家庭的补助明细表]插入本地数据库-->
+    <insert id="addAllow">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_SUBSIDY
+            (
+            CO_CODE,
+            FISCAL,
+            FIS_PERD,
+            B_ACC_CODE,
+            B_ACC_NAME,
+            ACC_CODE,
+            MONEY1,
+            MONEY2,
+            MONEY3,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            MONEY7,
+            MONEY8,
+            MONEY9,
+            MONEY10,
+            MONEY11,
+            MONEY12,
+            MONEY13
+            )
+            VALUES (
+            #{item.CO_CODE},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.B_ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_NAME,jdbcType=VARCHAR},
+            #{item.ACC_CODE,jdbcType=VARCHAR},
+            #{item.MONEY1,jdbcType=VARCHAR},
+            #{item.MONEY2,jdbcType=VARCHAR},
+            #{item.MONEY3,jdbcType=VARCHAR},
+            #{item.MONEY4,jdbcType=VARCHAR},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.MONEY7,jdbcType=VARCHAR},
+            #{item.MONEY8,jdbcType=VARCHAR},
+            #{item.MONEY9,jdbcType=VARCHAR},
+            #{item.MONEY10,jdbcType=VARCHAR},
+            #{item.MONEY11,jdbcType=VARCHAR},
+            #{item.MONEY12,jdbcType=VARCHAR},
+            #{item.MONEY13,jdbcType=VARCHAR}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[对个人和家庭的补助明细表]获取数据-->
+    <select id="getAllow" resultType="java.util.Map"> 
+      
+Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9,Sum(nvl(MONEY10,0)) MONEY10 ,Sum(nvl(MONEY11,0)) MONEY11,Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13
+        From  c_report_subsidy Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+
+       Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9,Sum(nvl(MONEY10,0)) MONEY10 ,Sum(nvl(MONEY11,0)) MONEY11,Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13
+       From  c_report_subsidy Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0)+nvl(MONEY11,0)+nvl(MONEY12,0)+nvl(MONEY13,0) ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9,MONEY10,MONEY11,MONEY12,MONEY13 From c_report_subsidy Where CO_CODE=#{co_code} And FISCAL=#{fiscal} AND fis_perd=#{fis_perd} And ACC_CODE=710101
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+        + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9,Sum(nvl(MONEY10,0)) MONEY10 ,Sum(nvl(MONEY11,0)) MONEY11,Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13
+       From  c_report_subsidy Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0)+nvl(MONEY11,0)+nvl(MONEY12,0)+nvl(MONEY13,0) ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9,MONEY10,MONEY11,MONEY12,MONEY13
+       From c_report_subsidy Where CO_CODE=#{co_code} And FISCAL=#{fiscal} AND fis_perd=#{fis_perd} And ACC_CODE=710102
+    </select>
+
+
+    <!--[对个人和家庭的补助明细表]下载(有千分位)-->
+    <select id="getAllow2" resultType="java.util.Map">
+Select to_char(Rownum) As Id,t.* From(
+       Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+ Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00')   ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00')  MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00')  MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00')  MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00')  MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00')  MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00')  MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00')  MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00')  MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00')  MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')  MONEY10 ,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00')  MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00')  MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00')  MONEY13
+        From  c_report_subsidy Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+        to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+ Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00')   ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00')  MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00')  MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00')  MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00')  MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00')  MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00')  MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00')  MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00')  MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00')  MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')  MONEY10 ,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00')  MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00')  MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00')  MONEY13
+        From  c_report_subsidy Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+        to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0)+nvl(MONEY11,0)+nvl(MONEY12,0)+nvl(MONEY13,0),'FM999,999,999,999,990.00') ALLMONEY,
+        to_char(MONEY1,'FM999,999,999,999,990.00'), to_char(MONEY2,'FM999,999,999,999,990.00'), to_char(MONEY3,'FM999,999,999,999,990.00'), to_char(MONEY4,'FM999,999,999,999,990.00'), to_char(MONEY5,'FM999,999,999,999,990.00'),
+        to_char(MONEY6,'FM999,999,999,999,990.00'), to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'), to_char(MONEY9,'FM999,999,999,999,990.00'),
+        to_char(MONEY10,'FM999,999,999,999,990.00'), to_char(MONEY11,'FM999,999,999,999,990.00'),to_char(MONEY12,'FM999,999,999,999,990.00'), to_char(MONEY13,'FM999,999,999,999,990.00')
+         From c_report_subsidy Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} AND fis_perd=#{fis_perd}And ACC_CODE=710101
+
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+ Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00')   ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00')  MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00')  MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00')  MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00')  MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00')  MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00')  MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00')  MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00')  MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00')  MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')  MONEY10 ,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00')  MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00')  MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00')  MONEY13
+       From  c_report_subsidy Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0)+nvl(MONEY11,0)+nvl(MONEY12,0)+nvl(MONEY13,0),'FM999,999,999,999,990.00') ALLMONEY,
+        to_char(MONEY1,'FM999,999,999,999,990.00'), to_char(MONEY2,'FM999,999,999,999,990.00'), to_char(MONEY3,'FM999,999,999,999,990.00'), to_char(MONEY4,'FM999,999,999,999,990.00'), to_char(MONEY5,'FM999,999,999,999,990.00'),
+        to_char(MONEY6,'FM999,999,999,999,990.00'), to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'), to_char(MONEY9,'FM999,999,999,999,990.00'),
+        to_char(MONEY10,'FM999,999,999,999,990.00'), to_char(MONEY11,'FM999,999,999,999,990.00'),to_char(MONEY12,'FM999,999,999,999,990.00'), to_char(MONEY13,'FM999,999,999,999,990.00')
+        From c_report_subsidy Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} AND fis_perd=#{fis_perd}And ACC_CODE=710102  )t
+
+
+    </select>
+
+    <!--[工资福利支出表]判断本地库是否有当月数据-->
+    <select id="isExistSalary" resultType="java.lang.Integer">
+        select count(*) from C_REPORT_SALARY where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </select>
+
+    <!--[工资福利支出表]删除本地库当月数据-->
+    <delete id="deleteSalary">
+        delete from C_REPORT_SALARY where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </delete>
+
+    <!--[工资福利支出表]调用存储过程获取数据-->
+    <select id="doSalary" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+        {CALL get_yykjhs_salary (#{co_code},#{fiscal},#{fis_perd},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap5})}
+     </select>
+
+    <!--[工资福利支出表]插入到本地数据库-->
+    <insert id="addSalary">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_SALARY
+            (
+            CO_CODE,
+            FISCAL,
+            FIS_PERD,
+            B_ACC_CODE,
+            B_ACC_NAME,
+            ACC_CODE,
+            MONEY1,
+            MONEY2,
+            MONEY3,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            MONEY7,
+            MONEY8,
+            MONEY9,
+            MONEY10,
+            MONEY11,
+            MONEY12,
+            MONEY13,
+            MONEY14
+            )
+            VALUES (
+            #{item.CO_CODE},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.B_ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_NAME,jdbcType=VARCHAR},
+            #{item.ACC_CODE,jdbcType=VARCHAR},
+            #{item.MONEY1,jdbcType=VARCHAR},
+            #{item.MONEY2,jdbcType=VARCHAR},
+            #{item.MONEY3,jdbcType=VARCHAR},
+            #{item.MONEY4,jdbcType=VARCHAR},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.MONEY7,jdbcType=VARCHAR},
+            #{item.MONEY8,jdbcType=VARCHAR},
+            #{item.MONEY9,jdbcType=VARCHAR},
+            #{item.MONEY10,jdbcType=VARCHAR},
+            #{item.MONEY11,jdbcType=VARCHAR},
+            #{item.MONEY12,jdbcType=VARCHAR},
+            #{item.MONEY13,jdbcType=VARCHAR},
+            #{item.MONEY14,jdbcType=VARCHAR}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[工资福利支出表]查看数据-->
+    <select id="getSalary" resultType="java.util.Map">
+       Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9, Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14
+        From  C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} 
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0)）
+       +Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9 , Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14  From  C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0)  ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9 ,MONEY10,MONEY11,MONEY12,MONEY13,MONEY14 From C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       +Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9 , Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14  From  C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0)  ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9 ,MONEY10,MONEY11,MONEY12,MONEY13,MONEY14 From C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}  And ACC_CODE=710102
+
+    </select>
+
+    <!--[工资福利支出表]下载(有千分位)-->
+    <select id="getSalary2" resultType="java.util.Map">
+       Select to_char(Rownum) As Id,t.* From
+(Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00') MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10, to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11, to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+      to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14
+        From  C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+        to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00') MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10, to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11, to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+      to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14
+        From  C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(MONEY1,'FM999,999,999,999,990.00'),to_char(MONEY2,'FM999,999,999,999,990.00'),to_char(MONEY3,'FM999,999,999,999,990.00'),to_char(MONEY4,'FM999,999,999,999,990.00'),
+       to_char(MONEY5,'FM999,999,999,999,990.00'),to_char(MONEY6,'FM999,999,999,999,990.00'),to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'),
+       to_char(MONEY9,'FM999,999,999,999,990.00'),to_char(MONEY10,'FM999,999,999,999,990.00'),to_char(MONEY11,'FM999,999,999,999,990.00'),to_char(MONEY12,'FM999,999,999,999,990.00'),
+       to_char(MONEY13,'FM999,999,999,999,990.00'),to_char(MONEY14,'FM999,999,999,999,990.00')
+        From C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+         to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00') MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10, to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11, to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+      to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14
+        From  C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+      to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(MONEY1,'FM999,999,999,999,990.00'),to_char(MONEY2,'FM999,999,999,999,990.00'),to_char(MONEY3,'FM999,999,999,999,990.00'),to_char(MONEY4,'FM999,999,999,999,990.00'),
+       to_char(MONEY5,'FM999,999,999,999,990.00'),to_char(MONEY6,'FM999,999,999,999,990.00'),to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'),
+       to_char(MONEY9,'FM999,999,999,999,990.00'),to_char(MONEY10,'FM999,999,999,999,990.00'),to_char(MONEY11,'FM999,999,999,999,990.00'),to_char(MONEY12,'FM999,999,999,999,990.00'),
+       to_char(MONEY13,'FM999,999,999,999,990.00'),to_char(MONEY14,'FM999,999,999,999,990.00')
+        From C_REPORT_SALARY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}  And ACC_CODE=710102)t
+
+    </select>
+
+    <!--[其他基本性支出明细表]判断本地数据库是否存在数据-->
+    <select id="isExistOtherPay" resultType="java.lang.Integer">
+        select COUNT(*) from C_REPORT_OTHERPAY where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </select>
+
+    <!--[其他基本性支出明细表]删除本地数据库数据-->
+    <delete id="deleteOtherPay">
+        delete from C_REPORT_OTHERPAY where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </delete>
+
+    <!--[其他基本性支出明细表]调用存储过程-->
+    <select id="doOtherPay" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+        {CALL get_yykjhs_otherpay (#{co_code},#{fiscal},#{fis_perd},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap6})}
+     </select>
+
+    <!--[其他基本性支出明细表]插入本地数据库-->
+    <insert id="addOtherPay">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_OTHERPAY
+            (
+            CO_CODE,
+            FISCAL,
+            FIS_PERD,
+            B_ACC_CODE,
+            B_ACC_NAME,
+            ACC_CODE,
+            MONEY1,
+            MONEY2,
+            MONEY3,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            MONEY7,
+            MONEY8,
+            MONEY9,
+            MONEY10,
+            MONEY11,
+            MONEY12,
+            MONEY13,
+            MONEY14,
+            MONEY15,
+            MONEY16
+            )
+            VALUES (
+            #{item.CO_CODE},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.B_ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_NAME,jdbcType=VARCHAR},
+            #{item.ACC_CODE,jdbcType=VARCHAR},
+            #{item.MONEY1,jdbcType=VARCHAR},
+            #{item.MONEY2,jdbcType=VARCHAR},
+            #{item.MONEY3,jdbcType=VARCHAR},
+            #{item.MONEY4,jdbcType=VARCHAR},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.MONEY7,jdbcType=VARCHAR},
+            #{item.MONEY8,jdbcType=VARCHAR},
+            #{item.MONEY9,jdbcType=VARCHAR},
+            #{item.MONEY10,jdbcType=VARCHAR},
+            #{item.MONEY11,jdbcType=VARCHAR},
+            #{item.MONEY12,jdbcType=VARCHAR},
+            #{item.MONEY13,jdbcType=VARCHAR},
+            #{item.MONEY14,jdbcType=VARCHAR},
+            #{item.MONEY15,jdbcType=VARCHAR},
+            #{item.MONEY16,jdbcType=VARCHAR}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[其他基本性支出明细表]获取数据-->
+    <select id="getOtherPay" resultType="java.util.Map">
+        Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9, Sum(nvl(MONEY10,0)) MONEY10,Sum(nvl(MONEY11,0)) MONEY11,Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14, Sum(nvl(MONEY15,0)) MONEY15, Sum(nvl(MONEY16,0)) MONEY16
+        From  C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} 
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0)）
+       +Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+ Sum(nvl(MONEY15,0))+ Sum(nvl(MONEY16,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9 , Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14 , Sum(nvl(MONEY15,0)) MONEY15, Sum(nvl(MONEY16,0)) MONEY16
+        From  C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+  +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY16,0) +nvl(MONEY16,0)  ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9 ,MONEY10,MONEY11,MONEY12,MONEY13,MONEY14,MONEY15,MONEY16 From C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0)）
+       +Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+ Sum(nvl(MONEY15,0))+ Sum(nvl(MONEY16,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9 , Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14 , Sum(nvl(MONEY15,0)) MONEY15, Sum(nvl(MONEY16,0)) MONEY16 From  C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+  +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY16,0) +nvl(MONEY16,0)  ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9 ,MONEY10,MONEY11,MONEY12,MONEY13,MONEY14,MONEY15,MONEY16 From C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102
+    </select>
+
+    <!--[其他基本性支出明细表]下载(含千分位)-->
+    <select id="getOtherPay2" resultType="java.util.Map">
+       Select to_char(Rownum) As Id,t.* From(
+Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+      to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00') MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9, to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14, to_char(Sum(nvl(MONEY15,0)),'FM999,999,999,999,990.00') MONEY15, to_char(Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00') MONEY16
+        From  C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} 
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00') MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9, to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14, to_char(Sum(nvl(MONEY15,0)),'FM999,999,999,999,990.00') MONEY15, to_char(Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00') MONEY16
+        From  C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+      to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+  +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY16,0) +nvl(MONEY16,0),'FM999,999,999,999,990.00')  ALLMONEY,
+      to_char(MONEY1,'FM999,999,999,999,990.00'),to_char(MONEY2,'FM999,999,999,999,990.00'),to_char(MONEY3,'FM999,999,999,999,990.00'),to_char(MONEY4,'FM999,999,999,999,990.00'),
+      to_char(MONEY5,'FM999,999,999,999,990.00'),to_char(MONEY6,'FM999,999,999,999,990.00'),to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'),
+      to_char(MONEY9,'FM999,999,999,999,990.00') ,to_char(MONEY10,'FM999,999,999,999,990.00'),to_char(MONEY11,'FM999,999,999,999,990.00'),to_char(MONEY12,'FM999,999,999,999,990.00'),
+      to_char(MONEY13,'FM999,999,999,999,990.00'),to_char(MONEY14,'FM999,999,999,999,990.00'),to_char(MONEY15,'FM999,999,999,999,990.00'),to_char(MONEY16,'FM999,999,999,999,990.00') 
+      From C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+   to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00')  ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00') MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9, to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14, to_char(Sum(nvl(MONEY15,0)),'FM999,999,999,999,990.00') MONEY15, to_char(Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00') MONEY16
+        From  C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+  +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY16,0) +nvl(MONEY16,0),'FM999,999,999,999,990.00')  ALLMONEY,
+      to_char(MONEY1,'FM999,999,999,999,990.00'),to_char(MONEY2,'FM999,999,999,999,990.00'),to_char(MONEY3,'FM999,999,999,999,990.00'),to_char(MONEY4,'FM999,999,999,999,990.00'),
+      to_char(MONEY5,'FM999,999,999,999,990.00'),to_char(MONEY6,'FM999,999,999,999,990.00'),to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'),
+      to_char(MONEY9,'FM999,999,999,999,990.00') ,to_char(MONEY10,'FM999,999,999,999,990.00'),to_char(MONEY11,'FM999,999,999,999,990.00'),to_char(MONEY12,'FM999,999,999,999,990.00'),
+      to_char(MONEY13,'FM999,999,999,999,990.00'),to_char(MONEY14,'FM999,999,999,999,990.00'),to_char(MONEY15,'FM999,999,999,999,990.00'),to_char(MONEY16,'FM999,999,999,999,990.00') 
+       From C_REPORT_OTHERPAY Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102
+)t
+
+
+    </select>
+
+    <!--[商品和服务支出明细表]判断本地库是否存在数据-->
+    <select id="isExistGoods" resultType="java.lang.Integer">
+        select COUNT(*) from C_REPORT_GOODS  where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </select>
+
+    <!--[商品和服务支出明细表]删除本地库存在的数据-->
+    <delete id="deleteGoods">
+        delete from  C_REPORT_GOODS  where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </delete>
+
+    <!--[商品和服务支出明细表]调用存储过程-->
+    <select id="doGoods" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+        {CALL  get_yykjhs_goods(#{co_code},#{fiscal},#{fis_perd},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap7})}
+    </select>
+
+    <!--[商品和服务支出明细表]插入本地数据库-->
+    <insert id="addGoods">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_GOODS
+            (
+            CO_CODE,
+            FISCAL,
+            FIS_PERD,
+            B_ACC_CODE,
+            B_ACC_NAME,
+            ACC_CODE,
+            MONEY1,
+            MONEY2,
+            MONEY3,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            MONEY7,
+            MONEY8,
+            MONEY9,
+            MONEY10,
+            MONEY11,
+            MONEY12,
+            MONEY13,
+            MONEY14,
+            MONEY15,
+            MONEY16,
+            MONEY17,
+            MONEY18,
+            MONEY19,
+            MONEY20,
+            MONEY21,
+            MONEY22,
+            MONEY23,
+            MONEY24,
+            MONEY25,
+            MONEY26,
+            MONEY27
+            )
+            VALUES (
+            #{item.CO_CODE},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.B_ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_NAME,jdbcType=VARCHAR},
+            #{item.ACC_CODE,jdbcType=VARCHAR},
+            #{item.MONEY1,jdbcType=VARCHAR},
+            #{item.MONEY2,jdbcType=VARCHAR},
+            #{item.MONEY3,jdbcType=VARCHAR},
+            #{item.MONEY4,jdbcType=VARCHAR},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.MONEY7,jdbcType=VARCHAR},
+            #{item.MONEY8,jdbcType=VARCHAR},
+            #{item.MONEY9,jdbcType=VARCHAR},
+            #{item.MONEY10,jdbcType=VARCHAR},
+            #{item.MONEY11,jdbcType=VARCHAR},
+            #{item.MONEY12,jdbcType=VARCHAR},
+            #{item.MONEY13,jdbcType=VARCHAR},
+            #{item.MONEY14,jdbcType=VARCHAR},
+            #{item.MONEY15,jdbcType=VARCHAR},
+            #{item.MONEY16,jdbcType=VARCHAR},
+            #{item.MONEY17,jdbcType=VARCHAR},
+            #{item.MONEY18,jdbcType=VARCHAR},
+            #{item.MONEY19,jdbcType=VARCHAR},
+            #{item.MONEY20,jdbcType=VARCHAR},
+            #{item.MONEY21,jdbcType=VARCHAR},
+            #{item.MONEY22,jdbcType=VARCHAR},
+            #{item.MONEY23,jdbcType=VARCHAR},
+            #{item.MONEY24,jdbcType=VARCHAR},
+            #{item.MONEY25,jdbcType=VARCHAR},
+            #{item.MONEY26,jdbcType=VARCHAR},
+            #{item.MONEY27,jdbcType=VARCHAR}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[商品和服务支出明细表]获取数据查看-->
+    <select id="getGoods" resultType="java.util.Map">
+
+
+Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)) 
+       +Sum(nvl(MONEY17,0))  +Sum(nvl(MONEY18,0))  +Sum(nvl(MONEY19,0))  +Sum(nvl(MONEY20,0)) 
+       +Sum(nvl(MONEY21,0)) +Sum(nvl(MONEY22,0))  +Sum(nvl(MONEY23,0))  +Sum(nvl(MONEY24,0))  +Sum(nvl(MONEY25,0)) 
+       +Sum(nvl(MONEY26,0))  +Sum(nvl(MONEY27,0))   ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9, Sum(nvl(MONEY10,0)) MONEY10,Sum(nvl(MONEY11,0)) MONEY11,Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14, Sum(nvl(MONEY15,0)) MONEY15, Sum(nvl(MONEY16,0)) MONEY16,
+     Sum(nvl(MONEY17,0)) MONEY17, Sum(nvl(MONEY18,0)) MONEY18, Sum(nvl(MONEY19,0)) MONEY19, Sum(nvl(MONEY20,0)) MONEY20,
+       Sum(nvl(MONEY21,0)) MONEY21, Sum(nvl(MONEY22,0)) MONEY22, Sum(nvl(MONEY23,0)) MONEY23, Sum(nvl(MONEY24,0)) MONEY24,
+       Sum(nvl(MONEY25,0)) MONEY25, Sum(nvl(MONEY26,0)) MONEY26, Sum(nvl(MONEY27,0)) MONEY27
+        From  C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} 
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0)）
+       +Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+ Sum(nvl(MONEY15,0))+ Sum(nvl(MONEY16,0))  
+       +Sum(nvl(MONEY17,0))  +Sum(nvl(MONEY18,0))  +Sum(nvl(MONEY19,0))  +Sum(nvl(MONEY20,0)) 
+       +Sum(nvl(MONEY21,0)) +Sum(nvl(MONEY22,0))  +Sum(nvl(MONEY23,0))  +Sum(nvl(MONEY24,0))  +Sum(nvl(MONEY25,0)) 
+       +Sum(nvl(MONEY26,0))  +Sum(nvl(MONEY27,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9 , Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14 , Sum(nvl(MONEY15,0)) MONEY15, Sum(nvl(MONEY16,0)) MONEY16,
+       Sum(nvl(MONEY17,0)) MONEY17, Sum(nvl(MONEY18,0)) MONEY18, Sum(nvl(MONEY19,0)) MONEY19, Sum(nvl(MONEY20,0)) MONEY20, Sum(nvl(MONEY21,0)) MONEY21,
+       Sum(nvl(MONEY22,0)) MONEY22, Sum(nvl(MONEY23,0)) MONEY23,Sum(nvl(MONEY24,0)) MONEY24, Sum(nvl(MONEY25,0)) MONEY25, Sum(nvl(MONEY26,0)) MONEY26,Sum(nvl(MONEY27,0)) MONEY27
+        From  C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY15,0) +nvl(MONEY16,0)
+       +nvl(MONEY17,0) +nvl(MONEY18,0) +nvl(MONEY19,0) +nvl(MONEY20,0) +nvl(MONEY21,0) +nvl(MONEY22,0) +nvl(MONEY23,0)
+       +nvl(MONEY24,0) +nvl(MONEY25,0) +nvl(MONEY26,0) +nvl(MONEY27,0) ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9 ,MONEY10,MONEY11,MONEY12,MONEY13,MONEY14,MONEY15,MONEY16 ,  MONEY17,
+  MONEY18, MONEY19, MONEY20, MONEY21, MONEY22, MONEY23, MONEY24, MONEY25, MONEY26, MONEY27 From C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101
+        Union all
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0)）
+       +Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+ Sum(nvl(MONEY15,0))+ Sum(nvl(MONEY16,0))  
+       +Sum(nvl(MONEY17,0))  +Sum(nvl(MONEY18,0))  +Sum(nvl(MONEY19,0))  +Sum(nvl(MONEY20,0)) 
+       +Sum(nvl(MONEY21,0)) +Sum(nvl(MONEY22,0))  +Sum(nvl(MONEY23,0))  +Sum(nvl(MONEY24,0))  +Sum(nvl(MONEY25,0)) 
+       +Sum(nvl(MONEY26,0))  +Sum(nvl(MONEY27,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9 , Sum(nvl(MONEY10,0)) MONEY10, Sum(nvl(MONEY11,0)) MONEY11, Sum(nvl(MONEY12,0)) MONEY12,
+       Sum(nvl(MONEY13,0)) MONEY13, Sum(nvl(MONEY14,0)) MONEY14 , Sum(nvl(MONEY15,0)) MONEY15, Sum(nvl(MONEY16,0)) MONEY16,
+       Sum(nvl(MONEY17,0)) MONEY17, Sum(nvl(MONEY18,0)) MONEY18, Sum(nvl(MONEY19,0)) MONEY19, Sum(nvl(MONEY20,0)) MONEY20, Sum(nvl(MONEY21,0)) MONEY21,
+       Sum(nvl(MONEY22,0)) MONEY22, Sum(nvl(MONEY23,0)) MONEY23,Sum(nvl(MONEY24,0)) MONEY24, Sum(nvl(MONEY25,0)) MONEY25, Sum(nvl(MONEY26,0)) MONEY26,Sum(nvl(MONEY27,0)) MONEY27
+        From  C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY15,0) +nvl(MONEY16,0)
+       +nvl(MONEY17,0) +nvl(MONEY18,0) +nvl(MONEY19,0) +nvl(MONEY20,0) +nvl(MONEY21,0) +nvl(MONEY22,0) +nvl(MONEY23,0)
+       +nvl(MONEY24,0) +nvl(MONEY25,0) +nvl(MONEY26,0) +nvl(MONEY27,0) ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9 ,MONEY10,MONEY11,MONEY12,MONEY13,MONEY14,MONEY15,MONEY16 ,  MONEY17,
+  MONEY18, MONEY19, MONEY20, MONEY21, MONEY22, MONEY23, MONEY24, MONEY25, MONEY26, MONEY27 From C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102
+
+    </select>
+
+    <!--[商品和服务支出明细表]下载(含千分位)-->
+    <select id="getGoods2" resultType="java.util.Map">
+Select to_char(Rownum) As Id,t.* From
+        (Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)) 
+       +Sum(nvl(MONEY17,0))  +Sum(nvl(MONEY18,0))  +Sum(nvl(MONEY19,0))  +Sum(nvl(MONEY20,0)) 
+       +Sum(nvl(MONEY21,0)) +Sum(nvl(MONEY22,0))  +Sum(nvl(MONEY23,0))  +Sum(nvl(MONEY24,0))  +Sum(nvl(MONEY25,0)) 
+       +Sum(nvl(MONEY26,0))  +Sum(nvl(MONEY27,0)),'FM999,999,999,999,990.00')    ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)) ,'FM999,999,999,999,990.00')MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9, to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14,to_char(Sum(nvl(MONEY15,0)),'FM999,999,999,999,990.00') MONEY15, to_char(Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00') MONEY16,
+       to_char(Sum(nvl(MONEY17,0)),'FM999,999,999,999,990.00') MONEY17, to_char(Sum(nvl(MONEY18,0)),'FM999,999,999,999,990.00') MONEY18, to_char(Sum(nvl(MONEY19,0)),'FM999,999,999,999,990.00') MONEY19, to_char(Sum(nvl(MONEY20,0)),'FM999,999,999,999,990.00') MONEY20,
+       to_char(Sum(nvl(MONEY21,0)),'FM999,999,999,999,990.00') MONEY21, to_char(Sum(nvl(MONEY22,0)),'FM999,999,999,999,990.00') MONEY22, to_char(Sum(nvl(MONEY23,0)),'FM999,999,999,999,990.00') MONEY23, to_char(Sum(nvl(MONEY24,0)),'FM999,999,999,999,990.00') MONEY24,
+       to_char(Sum(nvl(MONEY25,0)),'FM999,999,999,999,990.00') MONEY25, to_char(Sum(nvl(MONEY26,0)),'FM999,999,999,999,990.00') MONEY26, to_char(Sum(nvl(MONEY27,0)),'FM999,999,999,999,990.00') MONEY27
+        From  C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} 
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+      to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)) 
+       +Sum(nvl(MONEY17,0))  +Sum(nvl(MONEY18,0))  +Sum(nvl(MONEY19,0))  +Sum(nvl(MONEY20,0)) 
+       +Sum(nvl(MONEY21,0)) +Sum(nvl(MONEY22,0))  +Sum(nvl(MONEY23,0))  +Sum(nvl(MONEY24,0))  +Sum(nvl(MONEY25,0)) 
+       +Sum(nvl(MONEY26,0))  +Sum(nvl(MONEY27,0)),'FM999,999,999,999,990.00')    ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)) ,'FM999,999,999,999,990.00')MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9, to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14,to_char(Sum(nvl(MONEY15,0)),'FM999,999,999,999,990.00') MONEY15, to_char(Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00') MONEY16,
+       to_char(Sum(nvl(MONEY17,0)),'FM999,999,999,999,990.00') MONEY17, to_char(Sum(nvl(MONEY18,0)),'FM999,999,999,999,990.00') MONEY18, to_char(Sum(nvl(MONEY19,0)),'FM999,999,999,999,990.00') MONEY19, to_char(Sum(nvl(MONEY20,0)),'FM999,999,999,999,990.00') MONEY20,
+       to_char(Sum(nvl(MONEY21,0)),'FM999,999,999,999,990.00') MONEY21, to_char(Sum(nvl(MONEY22,0)),'FM999,999,999,999,990.00') MONEY22, to_char(Sum(nvl(MONEY23,0)),'FM999,999,999,999,990.00') MONEY23, to_char(Sum(nvl(MONEY24,0)),'FM999,999,999,999,990.00') MONEY24,
+       to_char(Sum(nvl(MONEY25,0)),'FM999,999,999,999,990.00') MONEY25, to_char(Sum(nvl(MONEY26,0)),'FM999,999,999,999,990.00') MONEY26, to_char(Sum(nvl(MONEY27,0)),'FM999,999,999,999,990.00') MONEY27
+        From  C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+      to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY15,0) +nvl(MONEY16,0)
+       +nvl(MONEY17,0) +nvl(MONEY18,0) +nvl(MONEY19,0) +nvl(MONEY20,0) +nvl(MONEY21,0) +nvl(MONEY22,0) +nvl(MONEY23,0)
+       +nvl(MONEY24,0) +nvl(MONEY25,0) +nvl(MONEY26,0) +nvl(MONEY27,0),'FM999,999,999,999,990.00') ALLMONEY,
+       to_char(MONEY1,'FM999,999,999,999,990.00'),to_char(MONEY2,'FM999,999,999,999,990.00'),to_char(MONEY3,'FM999,999,999,999,990.00'),to_char(MONEY4,'FM999,999,999,999,990.00'),
+       to_char(MONEY5,'FM999,999,999,999,990.00'),to_char(MONEY6,'FM999,999,999,999,990.00'),to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'),
+       to_char(MONEY9,'FM999,999,999,999,990.00'),to_char(MONEY10,'FM999,999,999,999,990.00'),to_char(MONEY11,'FM999,999,999,999,990.00'),
+       to_char(MONEY12,'FM999,999,999,999,990.00'),to_char(MONEY13,'FM999,999,999,999,990.00'),to_char(MONEY14,'FM999,999,999,999,990.00'),to_char(MONEY15,'FM999,999,999,999,990.00'),
+       to_char(MONEY16,'FM999,999,999,999,990.00'),to_char(MONEY17,'FM999,999,999,999,990.00'),to_char(MONEY18,'FM999,999,999,999,990.00'),to_char(MONEY19,'FM999,999,999,999,990.00'),
+       to_char(MONEY20,'FM999,999,999,999,990.00'), to_char(MONEY21,'FM999,999,999,999,990.00'), 
+       to_char(MONEY22,'FM999,999,999,999,990.00'), to_char(MONEY23,'FM999,999,999,999,990.00'), to_char(MONEY24,'FM999,999,999,999,990.00'), to_char(MONEY25,'FM999,999,999,999,990.00'),
+        to_char(MONEY26,'FM999,999,999,999,990.00'), to_char(MONEY27,'FM999,999,999,999,990.00') 
+       From C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101
+        Union all
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+      to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+ 
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))+ Sum(nvl(MONEY11,0))+ Sum(nvl(MONEY12,0))+ Sum(nvl(MONEY13,0))+ Sum(nvl(MONEY14,0))+Sum(nvl(MONEY15,0))+Sum(nvl(MONEY16,0)) 
+       +Sum(nvl(MONEY17,0))  +Sum(nvl(MONEY18,0))  +Sum(nvl(MONEY19,0))  +Sum(nvl(MONEY20,0)) 
+       +Sum(nvl(MONEY21,0)) +Sum(nvl(MONEY22,0))  +Sum(nvl(MONEY23,0))  +Sum(nvl(MONEY24,0))  +Sum(nvl(MONEY25,0)) 
+       +Sum(nvl(MONEY26,0))  +Sum(nvl(MONEY27,0)),'FM999,999,999,999,990.00')    ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00') MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00') MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00') MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00') MONEY4,
+       to_char(Sum(nvl(MONEY5,0)) ,'FM999,999,999,999,990.00')MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00') MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00') MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00') MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00') MONEY9, to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00') MONEY10,to_char(Sum(nvl(MONEY11,0)),'FM999,999,999,999,990.00') MONEY11,to_char(Sum(nvl(MONEY12,0)),'FM999,999,999,999,990.00') MONEY12,
+       to_char(Sum(nvl(MONEY13,0)),'FM999,999,999,999,990.00') MONEY13, to_char(Sum(nvl(MONEY14,0)),'FM999,999,999,999,990.00') MONEY14,to_char(Sum(nvl(MONEY15,0)),'FM999,999,999,999,990.00') MONEY15, to_char(Sum(nvl(MONEY16,0)),'FM999,999,999,999,990.00') MONEY16,
+       to_char(Sum(nvl(MONEY17,0)),'FM999,999,999,999,990.00') MONEY17, to_char(Sum(nvl(MONEY18,0)),'FM999,999,999,999,990.00') MONEY18, to_char(Sum(nvl(MONEY19,0)),'FM999,999,999,999,990.00') MONEY19, to_char(Sum(nvl(MONEY20,0)),'FM999,999,999,999,990.00') MONEY20,
+       to_char(Sum(nvl(MONEY21,0)),'FM999,999,999,999,990.00') MONEY21, to_char(Sum(nvl(MONEY22,0)),'FM999,999,999,999,990.00') MONEY22, to_char(Sum(nvl(MONEY23,0)),'FM999,999,999,999,990.00') MONEY23, to_char(Sum(nvl(MONEY24,0)),'FM999,999,999,999,990.00') MONEY24,
+       to_char(Sum(nvl(MONEY25,0)),'FM999,999,999,999,990.00') MONEY25, to_char(Sum(nvl(MONEY26,0)),'FM999,999,999,999,990.00') MONEY26, to_char(Sum(nvl(MONEY27,0)),'FM999,999,999,999,990.00') MONEY27
+        From  C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+   to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0) 
+       +nvl(MONEY10,0) +nvl(MONEY11,0) +nvl(MONEY12,0) +nvl(MONEY13,0) +nvl(MONEY14,0) +nvl(MONEY15,0) +nvl(MONEY16,0)
+       +nvl(MONEY17,0) +nvl(MONEY18,0) +nvl(MONEY19,0) +nvl(MONEY20,0) +nvl(MONEY21,0) +nvl(MONEY22,0) +nvl(MONEY23,0)
+       +nvl(MONEY24,0) +nvl(MONEY25,0) +nvl(MONEY26,0) +nvl(MONEY27,0),'FM999,999,999,999,990.00') ALLMONEY,
+       to_char(MONEY1,'FM999,999,999,999,990.00'),to_char(MONEY2,'FM999,999,999,999,990.00'),to_char(MONEY3,'FM999,999,999,999,990.00'),to_char(MONEY4,'FM999,999,999,999,990.00'),
+       to_char(MONEY5,'FM999,999,999,999,990.00'),to_char(MONEY6,'FM999,999,999,999,990.00'),to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'),
+       to_char(MONEY9,'FM999,999,999,999,990.00'),to_char(MONEY10,'FM999,999,999,999,990.00'),to_char(MONEY11,'FM999,999,999,999,990.00'),
+       to_char(MONEY12,'FM999,999,999,999,990.00'),to_char(MONEY13,'FM999,999,999,999,990.00'),to_char(MONEY14,'FM999,999,999,999,990.00'),to_char(MONEY15,'FM999,999,999,999,990.00'),
+       to_char(MONEY16,'FM999,999,999,999,990.00'),to_char(MONEY17,'FM999,999,999,999,990.00'),to_char(MONEY18,'FM999,999,999,999,990.00'),to_char(MONEY19,'FM999,999,999,999,990.00'),
+       to_char(MONEY20,'FM999,999,999,999,990.00'), to_char(MONEY21,'FM999,999,999,999,990.00'), 
+       to_char(MONEY22,'FM999,999,999,999,990.00'), to_char(MONEY23,'FM999,999,999,999,990.00'), to_char(MONEY24,'FM999,999,999,999,990.00'), to_char(MONEY25,'FM999,999,999,999,990.00'),
+        to_char(MONEY26,'FM999,999,999,999,990.00'), to_char(MONEY27,'FM999,999,999,999,990.00')   
+ From C_REPORT_GOODS Where CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102)t
+
+    </select>
+
+
+    <!--[经费支出表]判断本地库是否存在数据-->
+    <select id="isExistFee" resultType="java.lang.Integer">
+         select count(*) from C_REPORT_JFZC where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE = #{co_code}
+     </select>
+
+    <!--[经费支出表]删除本地数据库的数据-->
+    <delete id="deleteFee">
+         delete from C_REPORT_JFZC where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE = #{co_code}
+     </delete>
+
+    <!--[经费支出表]调用存储过程-->
+    <select id="doFee" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+              {CALL get_yykjhs_jfzc (#{co_code},#{fiscal},#{fis_perd},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap8})}
+     </select>
+
+    <!--[经费支出表]在本地库插入数据addFee-->
+    <insert id="addFee">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_JFZC
+            (
+            FIS_PERD,
+            FISCAL,
+            CO_CODE,
+            ACC_CODE,
+            B_ACC_CODE,
+            B_ACC_NAME,
+            MONEY1,
+            MONEY2,
+            MONEY3,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            MONEY7,
+            MONEY8,
+            MONEY9,
+            MONEY10
+            )
+            VALUES (
+            #{item.FIS_PERD,jdbcType=VARCHAR},
+            #{item.FISCAL,jdbcType=VARCHAR},
+            #{item.CO_CODE,jdbcType=VARCHAR},
+            #{item.ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_NAME,jdbcType=VARCHAR},
+            #{item.MONEY1,jdbcType=VARCHAR},
+            #{item.MONEY2,jdbcType=VARCHAR},
+            #{item.MONEY3,jdbcType=VARCHAR},
+            #{item.MONEY4,jdbcType=VARCHAR},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.MONEY7,jdbcType=VARCHAR},
+            #{item.MONEY8,jdbcType=VARCHAR},
+            #{item.MONEY9,jdbcType=VARCHAR},
+            #{item.MONEY10,jdbcType=VARCHAR}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[经费支出表]查看获取数据-->
+    <select id="getFeeList" resultType="java.util.Map">
+         Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+       + Sum(nvl(MONEY10,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9,Sum(nvl(MONEY10,0)) MONEY10
+        From  c_report_jfzc Where CO_CODE=#{co_code} And fis_perd=#{fis_perd} And fis_perd=#{fis_perd}
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+
+       Sum(nvl(MONEY10,0)) ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9,Sum(nvl(MONEY10,0)) MONEY10
+       From  c_report_jfzc Where CO_CODE=#{co_code} And fis_perd=#{fis_perd} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0) ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9,MONEY10 From c_report_jfzc Where CO_CODE=#{co_code} And fis_perd=#{fis_perd} AND fis_perd=#{fis_perd} And ACC_CODE=710101
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))
+        + Sum(nvl(MONEY10,0))  ALLMONEY,
+       Sum(nvl(MONEY1,0)) MONEY1,Sum(nvl(MONEY2,0)) MONEY2 ,Sum(nvl(MONEY3,0)) MONEY3,Sum(nvl(MONEY4,0)) MONEY4,
+       Sum(nvl(MONEY5,0)) MONEY5,Sum(nvl(MONEY6,0)) MONEY6 ,Sum(nvl(MONEY7,0)) MONEY7,Sum(nvl(MONEY8,0)) MONEY8,
+       Sum(nvl(MONEY9,0)) MONEY9,Sum(nvl(MONEY10,0)) MONEY10
+       From  c_report_jfzc Where CO_CODE=#{co_code} And fis_perd=#{fis_perd} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0) ALLMONEY,
+       MONEY1,MONEY2,MONEY3,MONEY4,MONEY5,MONEY6,MONEY7,MONEY8,MONEY9,MONEY10
+       From c_report_jfzc Where CO_CODE=#{co_code} And fis_perd=#{fis_perd} AND fis_perd=#{fis_perd} And ACC_CODE=710102
+
+     </select>
+
+
+    <!--[经费支出表]下载 (含千分位)-->
+    <select id="getFeeList2" resultType="java.util.Map">
+        Select to_char(Rownum) As Id,t.* From(
+       Select '' As B_ACC_CODE,'合计'As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+ Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')   ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00')  MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00')  MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00')  MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00')  MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00')  MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00')  MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00')  MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00')  MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00')  MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')  MONEY10
+        From  c_report_jfzc Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd}
+        Union all
+Select '' As B_ACC_CODE,  '基本支出小计' As B_ACC_NAME,
+        to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+ Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')   ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00')  MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00')  MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00')  MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00')  MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00')  MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00')  MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00')  MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00')  MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00')  MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')  MONEY10
+        From  c_report_jfzc Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710101 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+        to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0),'FM999,999,999,999,990.00') ALLMONEY,
+        to_char(MONEY1,'FM999,999,999,999,990.00'), to_char(MONEY2,'FM999,999,999,999,990.00'), to_char(MONEY3,'FM999,999,999,999,990.00'), to_char(MONEY4,'FM999,999,999,999,990.00'), to_char(MONEY5,'FM999,999,999,999,990.00'),
+        to_char(MONEY6,'FM999,999,999,999,990.00'), to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'), to_char(MONEY9,'FM999,999,999,999,990.00'),
+        to_char(MONEY10,'FM999,999,999,999,990.00')
+         From c_report_jfzc Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} AND fis_perd=#{fis_perd} And ACC_CODE=710101
+
+
+Union All
+Select '' As B_ACC_CODE,  '项目支出小计' As B_ACC_NAME,
+       to_char(Sum(nvl(MONEY1,0))+ Sum(nvl(MONEY2,0))+ Sum(nvl(MONEY3,0))+ Sum(nvl(MONEY4,0))+
+       Sum(nvl(MONEY5,0))+ Sum(nvl(MONEY6,0))+ Sum(nvl(MONEY7,0))+ Sum(nvl(MONEY8,0))+ Sum(nvl(MONEY9,0))+ Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')   ALLMONEY,
+       to_char(Sum(nvl(MONEY1,0)),'FM999,999,999,999,990.00')  MONEY1,to_char(Sum(nvl(MONEY2,0)),'FM999,999,999,999,990.00')  MONEY2 ,to_char(Sum(nvl(MONEY3,0)),'FM999,999,999,999,990.00')  MONEY3,to_char(Sum(nvl(MONEY4,0)),'FM999,999,999,999,990.00')  MONEY4,
+       to_char(Sum(nvl(MONEY5,0)),'FM999,999,999,999,990.00')  MONEY5,to_char(Sum(nvl(MONEY6,0)),'FM999,999,999,999,990.00')  MONEY6 ,to_char(Sum(nvl(MONEY7,0)),'FM999,999,999,999,990.00')  MONEY7,to_char(Sum(nvl(MONEY8,0)),'FM999,999,999,999,990.00')  MONEY8,
+       to_char(Sum(nvl(MONEY9,0)),'FM999,999,999,999,990.00')  MONEY9,to_char(Sum(nvl(MONEY10,0)),'FM999,999,999,999,990.00')  MONEY10
+       From  c_report_jfzc Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} And fis_perd=#{fis_perd} And ACC_CODE=710102 Group by ACC_CODE
+       Union All
+Select B_ACC_CODE,B_ACC_NAME,
+       to_char(nvl(MONEY1,0)+nvl(MONEY2,0)+nvl(MONEY3,0)+nvl(MONEY4,0)+nvl(MONEY5,0)+nvl(MONEY6,0)+nvl(MONEY7,0)+nvl(MONEY8,0)+nvl(MONEY9,0)+nvl(MONEY10,0),'FM999,999,999,999,990.00') ALLMONEY,
+        to_char(MONEY1,'FM999,999,999,999,990.00'), to_char(MONEY2,'FM999,999,999,999,990.00'), to_char(MONEY3,'FM999,999,999,999,990.00'), to_char(MONEY4,'FM999,999,999,999,990.00'), to_char(MONEY5,'FM999,999,999,999,990.00'),
+        to_char(MONEY6,'FM999,999,999,999,990.00'), to_char(MONEY7,'FM999,999,999,999,990.00'),to_char(MONEY8,'FM999,999,999,999,990.00'), to_char(MONEY9,'FM999,999,999,999,990.00'),
+        to_char(MONEY10,'FM999,999,999,999,990.00')
+        From c_report_jfzc Where  CO_CODE=#{co_code} And FISCAL=#{fiscal} AND fis_perd=#{fis_perd} And ACC_CODE=710102  )t
+
+    </select>
+
+
+    <!--[收入支出表]判断本地库是否有数据-->
+        <select id="isExistIncomePay" resultType="java.lang.Integer">
+            select count(*) from C_REPORT_SRZC where FISCAL=#{FISCAL} and FIS_PERD = #{FIS_PERD} and CO_CODE = #{CO_CODE}
+        </select>
+
+        <!--[收入支出表]删除本地库的数据-->
+        <delete id="deleteIncomePay">
+            delete from C_REPORT_SRZC where FISCAL=#{FISCAL} and FIS_PERD = #{FIS_PERD} and CO_CODE = #{CO_CODE}
+        </delete>
+
+        <!--[收入支出表]调用存储过程-->
+        <select id="doIncomePay" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+                 {CALL GET_YYKJHS_SRZC_XZ (#{CO_CODE},#{FISCAL},#{FIS_PERD},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap2})}
+        </select>
+
+        <!--[收入支出表]插入到本地数据库-->
+        <insert id="addIncomePay">
+            INSERT INTO C_REPORT_SRZC
+                (
+                  FISCAL,
+                  FIS_PERD,
+                  B_ACC_CODE,
+                  B_ACC_NAME,
+                  CO_CODE,
+                  MONEY1,
+                  MONEY2,
+                  ACC_CODE
+                )
+                VALUES (
+                #{FISCAL,jdbcType=VARCHAR},
+                #{FIS_PERD,jdbcType=VARCHAR},
+                #{B_ACC_CODE,jdbcType=VARCHAR},
+                #{B_ACC_NAME,jdbcType=VARCHAR},
+                #{CO_CODE,jdbcType=VARCHAR},
+                #{MONEY1,jdbcType=VARCHAR},
+                #{MONEY2,jdbcType=VARCHAR},
+                #{ACC_CODE,jdbcType=VARCHAR}
+                )
+        </insert>
+
+        <!--[收入支出表]查看数据-->
+        <select id="getIncomePay" resultType="java.util.Map">
+            SELECT B_ACC_CODE,B_ACC_NAME,MONEY1, MONEY2,(MONEY1-MONEY2) MONEY3 FROM C_REPORT_SRZC WHERE FISCAL=#{FISCAL} AND FIS_PERD = #{FIS_PERD} AND CO_CODE = #{CO_CODE}
+        </select>
+
+    <!--下载-->
+    <select id="getIncomePay2" resultType="java.util.Map">
+        SELECT ROWNUM AS ID, T.* FROM (SELECT B_ACC_CODE,B_ACC_NAME,TO_CHAR(MONEY1,'FM999,999,999,999,999.00') MONEY1,TO_CHAR(MONEY2,'FM999,999,999,999,999.00') MONEY2,TO_CHAR((MONEY1-MONEY2),'FM999,999,999,999,999.00') MONEY3 FROM C_REPORT_SRZC WHERE FISCAL=#{FISCAL} AND FIS_PERD = #{FIS_PERD} AND CO_CODE = #{CO_CODE})T
+    </select>
+</mapper>

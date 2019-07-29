@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.VoucherDao">
+    <insert id="addJson" parameterType="com.heitian.ssm.model.VoucherBean" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="PNO">
+            SELECT seq_payment_voucher.nextval from dual
+        </selectKey>
+        insert into C_PAYMENT_VOUCHER (
+        PNO,
+        DESCRIBE,
+        GDATE
+        )
+        values
+        (
+        #{PNO},
+        #{VoucherJson},
+        to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss')
+        )
+    </insert>
+
+    <select id="getDataByPno" resultType="java.util.Map" parameterType="com.heitian.ssm.model.VoucherBean">
+        select to_char(DESCRIBE) as list from C_PAYMENT_VOUCHER where PNO= #{PNO}
+    </select>  
+    
+    
+    <select id="selectInfo" resultType="com.heitian.ssm.model.VoucherBean">
+        select * from C_VOUCHER where CBMUNITID=#{CBMUNITID}
+    </select>
+
+
+    <update id="updateInfo" parameterType="com.heitian.ssm.model.VoucherBean">
+        update C_VOUCHER SET
+        LODOPUP=#{LODOPUP},
+        LODOPLEFT=#{LODOPLEFT}
+        WHERE  CBMUNITID=#{CBMUNITID}
+    </update>
+</mapper>

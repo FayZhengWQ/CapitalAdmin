@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<importFile>
+	<startRowNo>4</startRowNo>
+
+	<!--预算外支出月报表-->
+	<!--cellType 单元格类型-->
+
+	<!--项目名称-->
+	<cell>
+		<number>0</number>
+		<key>C_ACC_NAME</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--金额-->
+	<cell>
+		<number>1</number>
+		<key>C_MONEY</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+
+</importFile>
+

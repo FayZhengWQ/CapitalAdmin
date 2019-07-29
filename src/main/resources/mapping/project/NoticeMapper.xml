@@ -1,0 +1,99 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.project.NoticeDao">
+
+    <resultMap id="NoticeBaseMap" type="com.heitian.ssm.model.project.NoticeBean">
+    </resultMap>
+
+    <resultMap id="NoticeEditorMap" type="com.heitian.ssm.model.project.NoticeEditorModel">
+
+    </resultMap>
+
+    <resultMap id="ProjectBaseMap" type="com.heitian.ssm.model.project.Project">
+        
+    </resultMap>
+
+
+    <!--添加公告单 除BANNOUNCEMENTDOC-->
+    <insert id="AddNotice"  parameterType="com.heitian.ssm.model.project.NoticeBean">
+          INSERT INTO C_PROG_ANNOUNCEMENT (CXZPROGID,CXZPROGNAME,CANNOUNCETYPE,START_DATE,END_DATE,CBMUNITID,CBMUNITNAME,MONTH,YEAR,GDATE,PNO)
+	           VALUES (#{CXZPROGID},#{CXZPROGNAME},#{CANNOUNCETYPE},to_Date(#{START_DATE},'yyyy-MM-dd'),to_Date(#{END_DATE},'yyyy-MM-dd'),#{CBMUNITID},#{CBMUNITNAME},#{MONTH},#{YEAR},to_Date(#{GDATE},'yyyy-MM-dd'),#{PNO})
+    </insert>
+
+
+    <!--查询公告单详情-->
+    <select id="SelectNoticeDetail"   resultMap="NoticeBaseMap">
+          SELECT * from C_PROG_ANNOUNCEMENT
+                  WHERE CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME}  and PNO=#{PNO} and  YEAR=#{YEAR}
+
+    </select>
+
+    <!--修改公告单详情-->
+    <update id="UpdateNotice" parameterType="com.heitian.ssm.model.project.NoticeBean">
+          UPDATE C_PROG_ANNOUNCEMENT set
+          CANNOUNCETYPE=#{CANNOUNCETYPE},
+          START_DATE=to_Date(#{START_DATE},'yyyy-MM-dd'),
+          END_DATE=to_Date(#{END_DATE},'yyyy-MM-dd'),
+          CBMUNITNAME=#{CBMUNITNAME} ,
+          MONTH=#{MONTH},
+          YEAR=#{YEAR},
+          GDATE=to_Date(#{GDATE},'yyyy-MM-dd')
+          WHERE CBMUNITID=#{CBMUNITID}  and  CBMUNITNAME=#{CBMUNITNAME}   and   PNO=#{PNO}  and YEAR=#{YEAR}
+
+    </update>
+
+    <!--修改公告单-->
+    <update id="UpdateNoticeDoc"  parameterType="com.heitian.ssm.model.project.NoticeBean">
+        UPDATE C_PROG_ANNOUNCEMENT
+               set BANNOUNCEMENTDOC=#{BANNOUNCEMENTDOC}
+               where  CBMUNITID=#{CBMUNITID}  and CBMUNITNAME=#{CBMUNITNAME} and PNO=#{PNO} and YEAR=#{YEAR}
+    </update>
+
+
+    <select id="selectNoticeDprog" resultMap="NoticeEditorMap">
+        select  A.CXZPROGID,A.CXZPROGNAME,A.CBMUNITID, A.FILENO, A.CUNITNAME,B.START_DATE,B.END_DATE,B.BANNOUNCEMENTDOC
+       from C_PROG A
+       Left  join C_PROG_ANNOUNCEMENT B on A.CXZPROGID=B.CXZPROGID and A.CBMUNITID= B.CBMUNITID and A.CBMUNITNAME=B.CBMUNITNAME and A.PNO=B.PNO
+       WHERE A.CBMUNITID=#{CBMUNITID} and A.CBMUNITNAME=#{CBMUNITNAME} and A.PNO=#{PNO}
+    </select>
+
+
+    <!--刷-->
+    <insert id="falsh" parameterType="java.util.List" useGeneratedKeys="false">
+            INSERT INTO C_PROG_ANNOUNCEMENT
+             (CXZPROGID,
+             CXZPROGNAME,
+             CANNOUNCETYPE,
+             START_DATE,
+             END_DATE,
+             CBMUNITID,
+             CBMUNITNAME,
+             MONTH,
+             YEAR,
+             GDATE,
+             PNO)
+        select A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.cxzprogid,jdbcType=VARCHAR},
+            #{item.cxzprogname,jdbcType=VARCHAR},
+            '张榜公示',
+            to_date(#{item.ddate},'yyyy-MM-dd'),
+            to_date(#{item.ddate},'yyyy-mm-dd')+7,
+            #{item.cbmunitid,jdbcType=VARCHAR},
+            #{item.cbmunitname,jdbcType=VARCHAR},
+            to_char(sysdate,'mm'),
+            to_char(sysdate,'yyyy'),
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            #{item.pno,jdbcType=VARCHAR}
+            from dual
+        </foreach>
+        ) A
+
+
+
+
+    </insert>
+
+
+
+</mapper>

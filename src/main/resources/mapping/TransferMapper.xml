@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.project.TransferDao">
+    <resultMap id="JczlBaseMap" type="com.heitian.ssm.model.JczlBean">
+    </resultMap>
+
+    <resultMap id="TransferBaseMap" type="com.heitian.ssm.model.DprogsBean">
+    </resultMap>
+
+    <resultMap id="TransferMap" type="com.heitian.ssm.model.project.TransferModel">
+    </resultMap>
+
+
+    <select id="GetTransfer" parameterType="com.heitian.ssm.model.DprogsBean" resultMap="TransferBaseMap">
+            SELECT * FROM C_PROGS where CBMUNITID=#{CBMUNITID}
+    </select>
+
+
+
+    <!--添加到结转表-->
+    <insert id="insertDprogs" parameterType="com.heitian.ssm.model.project.TransferModel">
+        INSERT INTO C_PROGS (CXZPROGID,CXZPROGNAME,DPRODATE,DGKKS,IMONEY, CMEMO,CBMUNITID,CXZENTERPRISEID,CBMUNITNAME,MONTH,GDATE,YEAR,PNO,CPNO,IYEAR) VALUES
+          (#{CXZPROGID},#{CXZPROGNAME},to_Date(#{DPRODATE},'yyyy-MM-dd'),#{DGKKS},#{IMONEY},#{CMEMO},#{CBMUNITID},#{CXZENTERPRISEID},#{CBMUNITNAME},#{MONTH},to_Date(#{GDATE},'yyyy-MM-dd'),#{YEAR},#{PNO},#{CPNO},#{IYEAR})
+    </insert>
+
+    <!--查询结转列表-->
+    <select id="selectDprogsList" parameterType="com.heitian.ssm.model.project.TransferModel" resultMap="TransferMap">
+
+         SELECT   CXZENTERPRISEID,To_char(DPRODATE,'yyyy-MM-dd') as  DPRODATE ,DGKKS,CMEMO,  TO_CHAR(IMONEY,'FM999,999,999,999,990.00') as IMONEY  from C_PROGS where   CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME} and CPNO=#{CPNO}
+
+     </select>
+
+    <!--查询已转额度-->
+    <select id="SumDprog" parameterType="com.heitian.ssm.model.project.TransferModel" resultType="java.lang.Integer">
+        SELECT nvl(SUM(IMONEY),0) from C_PROGS where CBMUNITID=#{CBMUNITID}  and CPNO=#{CPNO}
+    </select>
+
+    <!--https://blog.csdn.net/qq_18860779/article/details/53398696-->
+    <!--添加到中间表-->
+    <insert id="insertInfo" parameterType="com.heitian.ssm.model.project.BudgetctrlModel" useGeneratedKeys="true" >
+
+
+        <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="PNO">
+            SELECT TS_XMKCTRL_PNO_autoinc.nextval   from dual
+        </selectKey>
+
+        INSERT  INTO TS_XMKCTRL ( SET_YEAR,PRJCODE,ENTERPRISEGUID,ENTERPRISENAME,PROGRAMNAME,PROGRAMTYPEGUID,PROGRAMTYPENAME,FUNCTIONGUID,FUNCTIONNAME,ECONOMYSECTIONGUID,ECONOMYSECTIONNAME,RESOURCEGUID, RESOURCENAME,
+        RESOURCECODE,MONEY,OPERATORGUID,BUDGETCATEGORYGUID,BUDGETCATEGORYNAME,DIVISIONGUID,DIVISIONNAME,GUID,XMK_ECOGOVCODE,ECOGOVGUID,ECOGOVINCODE,ECOGOVNAME,PNO)
+        values (#{SET_YEAR},#{PRJCODE},#{ENTERPRISEGUID},#{ENTERPRISENAME},#{PROGRAMNAME},#{PROGRAMTYPEGUID},#{PROGRAMTYPENAME},#{FUNCTIONGUID},#{FUNCTIONNAME},#{ECONOMYSECTIONGUID},#{ECONOMYSECTIONNAME},#{RESOURCEGUID},#{RESOURCENAME},
+        #{RESOURCECODE},#{MONEY},#{OPERATORGUID},#{BUDGETCATEGORYGUID},#{BUDGETCATEGORYNAME},#{DIVISIONGUID},#{DIVISIONNAME},#{GUID},#{XMK_ECOGOVCODE},#{ECOGOVGUID},#{ECOGOVINCODE},#{ECOGOVNAME},#{PNO})
+    </insert>
+
+    <select id="Txcount" resultType="java.lang.Integer">
+        select  count(*) from  TS_XMKCTRL
+    </select>
+
+    <select id="selectPay" parameterType="com.heitian.ssm.model.project.TransferModel" resultType="com.heitian.ssm.model.project.TransferModel">
+         select CXZPROGID||' '||CXZPROGNAME as  CPROGRAMNAME,
+         CXZPROGID ,
+         CXZPROGNAME,
+         TO_CHAR(IMONEY,'FM999,999,999,999,990.00') as IMONEY ,
+         TO_CHAR(PAY_IMONEY,'FM999,999,999,999,990.00') as PAY_IMONEY,
+         TO_CHAR(IMONEY-PAY_IMONEY,'FM999,999,999,999,990.00') As IMONEY2,
+         PAY_STATE,CXZENTERPRISEID,
+         IYEAR,
+         PNO,
+         money_to_chinese(IMONEY-PAY_IMONEY) As CHINSESMONEY
+          from C_PROGS where C_PROGS.CBMUNITID=#{CBMUNITID} and C_PROGS.IYEAR=#{IYEAR} and PAY_STATE=0
+    </select>
+
+
+    <!--修改C_PROGS的pay_state状态 和pay_money的值-->
+
+    <update id="updataPay" >
+        update C_PROGS set  PAY_IMONEY=#{PAY_IMONEY}, PAY_STATE=#{PAY_STATE} where  CXZENTERPRISEID=#{CXZENTERPRISEID} and IYEAR=#{IYEAR} and CBMUNITID=#{CBMUNITID} and PNO=#{PNO}
+    </update>
+
+
+    <!--保存rowid-->
+
+    <insert id="insertId" >
+        INSERT  INTO C_PROGS (ROW,CXZENTERPRISEID) values (#{row} #{CXZENTERPRISEID})
+    </insert>
+
+    <select id="selectECOIN" resultType="com.heitian.ssm.model.project.TransferModel">
+
+        select ECONOMYSECTIONID from  TS_XMKCTRL where PNO=#{PNO}
+
+    </select>
+
+    <!--查指标号 已拨款完-->
+    <select id="selectNo" resultMap="TransferMap">
+        select CXZENTERPRISEID from C_PROGS   where  CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME}  and PAY_STATE=1 and PNO=#{PNO}
+
+    </select>
+</mapper>

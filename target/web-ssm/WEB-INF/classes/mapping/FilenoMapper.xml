@@ -1,0 +1,129 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.FilenoDao">
+
+    <resultMap id="FilenoBaseMap" type="com.heitian.ssm.model.FilenoModel">
+
+    </resultMap>
+
+    <!---->
+    <!--保存文件位置记录-->
+    <insert id="insertFileno">
+        Insert into C_PROG_FILE
+          (PNO,PATH ,GDATE,OPERATOR,YEAR,MONTH,FILENO,FILENAME)
+        values
+          ( Seq_FILE.nextval,#{PATH},to_Date(#{GDATE},'yyyy-MM-dd hh24:mi:ss'),#{OPERATOR},#{YEAR},#{MONTH},#{FILENO},#{FILENAME})
+
+    </insert>
+
+    <!--查询文件-->
+    <select id="selectFileno" resultMap="FilenoBaseMap">
+        select * from C_PROG_FILE
+        <where>
+            <if test="FILENAME !='' and FILENAME !='null'">
+                FILENAME=#{FILENAME}
+            </if>
+        </where>
+    </select>
+
+    <!--删除文件-->
+    <delete id="deleteFileno">
+        delete  from C_PROG_FILE  where FILENAME=#{FILENAME}
+    </delete>
+
+    <!--【DataSource16】区财政查询文号文件-->
+    <select id="getFileList" resultType="java.util.Map">
+        Select Rownum id,aa.* From(
+    Select a.FILENO,c.filename As filename From(
+    Select d.FILENO from(
+    Select C.FILENO
+    From ${tableName} C
+    where C.IYEAR=#{iyear}
+    and C.SIGNED=-4
+    and C.crecbankno is not null
+    Union all
+    Select C.FILENO
+    from ${tableName} C
+    where
+    C.IYEAR=#{iyear}
+    and C.SIGNED=-2
+    )d Group By d.FILENO
+    )a
+    Left Join (
+    Select fileno,WMSYS.WM_CONCAT(filename) filename From xzzjjg.c_prog_file Group By fileno
+    ) c
+    On a.FILENO=c.FILENO
+    ) aa
+    <where>
+        <if test="status==1">
+            aa.filename Is not Null
+        </if>
+        <if test="status==2">
+            aa.filename Is Null
+        </if>
+    </where>
+
+</select>
+
+    <!--乡镇政查询文号文件-->
+    <select id="getXZFileList" resultType="java.util.Map">
+        select ROWNUM AS ID,t.* from (Select CPROGRAMNAME,FILENO, to_char(filename) filename ,CFUNCTION,CRESOURCE,CENTERPRISENAME,
+        TO_CHAR(IMONEY,'FM999,999,999,999,990.00') IMONEY,SZTYPE,
+        decode(SIGNED,-2,cacceptname,Crecname) CRECNAME,
+        decode(SIGNED,-2,cacceptaccount,crecbankno) CRECBANKNO,
+        decode(SIGNED,-2,cacceptbank,crecbankname) CRECBANKNAME,IYEAR
+        From(
+        Select C.CPROGRAMNAME,C.FILENO, a.FILENAME,C.CFUNCTIONCODE||' '||C.CFUNCTIONNAME CFUNCTION,C.CRESOURCECODE||'
+        '||C.CRESOURCENAME CRESOURCE, C.CENTERPRISENAME,C.IMONEY,
+        decode(C.SZTYPE,5,'一般公共财政预算',6,'政府性基金',11,'社保基金',12,'国有资本经营性') as SZTYPE,C.IYEAR,
+        C.CRECNAME,C.CRECBANKNO,C.CRECBANKNAME,
+        C.CACCEPTNAME,C.CACCEPTACCOUNT,C.CACCEPTBANK,
+        C.SIGNED
+        From ( Select * From ${tableName}
+        <where>
+
+            <choose>
+                <when test="SHORTNAME='马鞍镇' or SHORTNAME='安昌街道' or SHORTNAME='齐贤街道'">
+                    centerprisename like '%${SHORTNAME}%' Or CRECNAME like '%${SHORTNAME}%' Or centerprisename like
+                    '%柯桥经济%'Or CRECNAME like '%柯桥经济%'
+
+                </when>
+                <otherwise>
+                    centerprisename like '%${SHORTNAME}%' Or CRECNAME like '%${SHORTNAME}%'
+                </otherwise>
+            </choose>
+        </where>
+
+
+        ) C
+        Left Join
+        (Select fileno,WMSYS.WM_CONCAT(filename) filename From xzzjjg.c_prog_file Group By fileno) a
+        On a.FILENO=c.FILENO
+        )
+        <where>
+            IYEAR=#{iyear} and SIGNED in(-2,-4)
+            <if test="status==1">
+                and filename Is not Null
+            </if>
+            <if test="status==2">
+                and filename Is Null
+            </if>
+        </where>) t
+
+    </select>
+
+    <!--【查询文件】根据fileno查询c_prog_file对应的数据-->
+    <select id="getFileByFILENO" resultType="java.util.Map">
+        select * from C_PROG_FILE where FILENO = #{FILENO}
+    </select>
+
+    <select id="getFileByPno" resultType="java.util.Map">
+        select * from C_PROG_FILE where PNO=#{PNO}
+    </select>
+
+
+    <!--根据pno删除-->
+    <delete id="deleteFileByPno">
+        delete from C_PROG_FILE where PNO=#{PNO}
+    </delete>
+
+</mapper>

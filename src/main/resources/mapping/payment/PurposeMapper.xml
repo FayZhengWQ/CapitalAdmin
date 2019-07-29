@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.payment.PurposeDao">
+
+    <insert id="addPurpose" parameterType="java.util.List" useGeneratedKeys="false">
+        insert into C_PAYMENT_PURPOSE(
+        PNO,
+        PURPOSENAME,
+        CBMUNITID,
+        C_YEAR,
+        GDATE,
+        YEAR,
+        MONTH,
+        OPERATOR,
+        POWER
+        )
+        select SEQ_PURPOSE.nextval, A.*  from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.PURPOSENAME,jdbcType=VARCHAR},
+            #{item.CBMUNITID,jdbcType=VARCHAR},
+            #{item.C_YEAR,jdbcType=VARCHAR},
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            to_char(sysdate,'yyyy'),
+            to_char(sysdate,'mm'),
+            #{item.OPERATOR,jdbcType=VARCHAR},
+            #{item.POWER,jdbcType=VARCHAR}
+            from dual
+        </foreach>
+        ) A
+    </insert>
+
+    <!--插入单条，把pno返回个前端-->
+    <insert id="addOnePurpose" parameterType="java.util.Map" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="PNO">
+            SELECT SEQ_PURPOSE.nextval from dual
+        </selectKey>
+        insert into C_PAYMENT_PURPOSE (
+        PNO,
+        PURPOSENAME,
+        CBMUNITID,
+        C_YEAR,
+        GDATE,
+        YEAR,
+        MONTH,
+        OPERATOR,
+        POWER
+        )
+        values
+        (
+        #{PNO},
+        #{PURPOSENAME,jdbcType=VARCHAR},
+        #{CBMUNITID,jdbcType=VARCHAR},
+        #{C_YEAR,jdbcType=VARCHAR},
+        to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+        to_char(sysdate,'yyyy'),
+        to_char(sysdate,'mm'),
+        #{OPERATOR,jdbcType=VARCHAR},
+        #{POWER,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!--查询purpose-->
+    <select id="getList" resultType="java.util.Map">
+        select * from C_PAYMENT_PURPOSE
+        where CBMUNITID=#{CBMUNITID}  and C_YEAR=#{C_YEAR}  and POWER=#{POWER}
+        order by PNO DESC
+    </select>
+
+    <!--删除purpose-->
+    <delete id="deletePurpose">
+        delete from C_PAYMENT_PURPOSE where PNO in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.PNO}
+        </foreach>
+    </delete>
+
+    <!--根据PURPOSENAME判断是否存在数据-->
+    <select id="isExistPurpose" resultType="com.heitian.ssm.model.payment.PurposeModel">
+        select * from C_PAYMENT_PURPOSE
+        where PURPOSENAME=#{PURPOSENAME} and CBMUNITID=#{CBMUNITID} and POWER = #{POWER}
+    </select>
+</mapper>

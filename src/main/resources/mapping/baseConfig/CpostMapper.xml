@@ -1,0 +1,65 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.baseConfig.CpostDao">
+
+    <resultMap id="PostFunctionBaseMap" type="com.heitian.ssm.model.baseconfig.OperPostFunctionModel"></resultMap>
+
+
+    <!--查询多用岗位-->
+    <select id="queryAllCpost" resultType="com.heitian.ssm.model.baseconfig.CpostModel">
+        Select CPOSTNAME,CPOSTGUID,decode(ISDISABLEED,0,'启用',1,'禁用') As ISDISABLEED From C_POST
+    </select>
+
+    <!--禁用对应数据-->
+    <update id="modifierisDisable">
+        Update C_POST Set ISDISABLEED=#{isdisableed} Where CPOSTGUID=#{cpostguid}
+    </update>
+
+    <delete id="deleteFuncGuid">
+        delete from C_POSTFUNCTION where CPOSTGUID = #{cpostguid}
+    </delete>
+
+    <insert id="insertPostFunction" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_POSTFUNCTION
+            (CPOSTGUID,CFUNCTIONGUID)
+            VALUES
+            (#{item.CPOSTGUID},#{item.CFUNCTIONGUID})
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--查询postfunction-->
+    <select id="slectOperPostFunction" parameterType="java.util.Map" resultMap="PostFunctionBaseMap">
+        select CUSERID from C_OPERPOSTFUNCTION where CPOSTGUID=#{cpostguid} group by CUSERID
+    </select>
+
+    <delete id="deleteOPF">
+        delete from C_OPERPOSTFUNCTION where CPOSTGUID = #{cpostguid}
+    </delete>
+
+
+    <insert id="insetOPF" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_OPERPOSTFUNCTION
+            (CUSERID,CPOSTGUID,CFUNCTIONGUID)
+            VALUES
+            (#{item.CUSERID},#{item.CPOSTGUID},#{item.CFUNCTIONGUID})
+        </foreach>
+        select 1 from dual
+    </insert>
+
+
+    <!--根据cpostguid查询-->
+    <select id="getCPostByCPostguid" resultType="com.heitian.ssm.model.baseconfig.CpostModel">
+        select CPOSTGUID,CPOSTNAME from C_POST Where CPOSTGUID=#{cpostguid} Or CPOSTNAME=#{cpostname} Group By  cpostguid ,cpostname
+    </select>
+
+
+
+    <!--添加一条岗位模块-->
+    <insert id="addcpost" parameterType="com.heitian.ssm.model.baseconfig.CpostModel">
+        Insert into C_POST(CPOSTNAME,CPOSTGUID) values (#{CPOSTNAME},#{CPOSTGUID})
+    </insert>
+</mapper>

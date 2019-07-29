@@ -1,0 +1,156 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.baseConfig.UserDao">
+
+
+
+    <resultMap id="UserBaseMap" type="com.heitian.ssm.model.baseconfig.UserModel">
+    </resultMap>
+
+
+
+    <!--&lt;!&ndash;登陆&ndash;&gt;-->
+    <!--<select id="selectUser" parameterType="com.heitian.ssm.model.baseconfig.UserModel" resultMap="UserBaseMap">-->
+
+        <!--select * from C_USER where  CUSERNAME=#{CUSERNAME}  and CPASSWORD=#{CPASSWORD}-->
+
+    <!--</select>-->
+
+    <!--注册-->
+
+    <insert id="insertUser" parameterType="com.heitian.ssm.model.baseconfig.UserModel">
+        insert  into   C_USER (CUSERID,CUSERNAME,CPASSWORD,CBMUNITID,CBMUNITNMAE,URL) VALUES (#{CUSERID},#{CUSERNAME},#{CPASSWORD},#{CBMUNITID},#{CBMUNITNMAE},#{URL})
+    </insert>
+
+
+    <!--查询B_BMUNITS表-->
+    <select id="selectBMUNITS"  resultMap="UserBaseMap">
+         select * from B_BMUNITS
+    </select>
+
+    <select id="SelectUser" resultMap="UserBaseMap">
+         select * From C_USER
+    </select>
+
+    <delete id="DeleteUser" >
+         delete from C_USER where CUSERNAME=#{CUSERNAME} and CPASSWORD=#{CPASSWORD}
+    </delete>
+
+
+
+    <!--查询所有用户-->
+    <select id="queryAllUser" resultType="com.heitian.ssm.model.baseconfig.UserModel">
+         select CUSERID,CUSERNAME,CPASSWORD,CBMUNITID,CBMUNITNAME,OPERATORGUID,SFZH,decode(ISDISABLE,0,'启用','禁用') As ISDISABLE,
+        decode(ISTEST,0,'非测试','测试') As ISTEST,PHONE,CPOSTGUID,NICKNAME,SHORTER from C_USER
+    </select>
+
+    <!--登录验证-->
+    <select id="login" parameterType="java.util.Map" resultType="java.util.Map">
+       Select * from C_USER t1,C_BMUNITS t2,C_YYKJHS_BMUNITS t3
+        Where t1.CBMUNITID=t2.CBMUNITID
+               and t1.CUSERNAME=#{cusername}
+                and t1.CPASSWORD=#{cpassword}
+                And t1.CBMUNITID=t3.Cbmunitid
+    </select>
+
+    <!--根据cusename查询UserModel-->
+    <select id="queryUserByName" resultType="com.heitian.ssm.model.baseconfig.UserModel">
+        select * from C_USER where CUSERNAME = #{cusername} and NICKNAME=#{nickname}
+    </select>
+
+    <!--注册用户-->
+    <insert id="register" parameterType="com.heitian.ssm.model.baseconfig.UserModel" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="CUSERID">
+            SELECT Seq_User.nextval from dual
+        </selectKey>
+        Insert into C_USER
+          (CUSERID,CUSERNAME,CPASSWORD,CBMUNITID,CBMUNITNAME,OPERATORGUID,SFZH,CPOSTGUID,PHONE,NICKNAME,SHORTER)
+        values
+          ( #{CUSERID},#{CUSERNAME},#{CPASSWORD},#{CBMUNITID},#{CBMUNITNAME},22,#{SFZH},#{CPOSTGUID},#{PHONE},#{NICKNAME},#{SHORTER})
+
+    </insert>
+
+    <select id="getAllFunc" resultType="com.heitian.ssm.model.baseconfig.FunctionModel">
+        Select * from C_FUNCTION order by GUID
+    </select>
+
+
+    <!--功能表根据cpostguid做 岗位对功能查询-->
+    <select id="queryFuncByCondition"  resultType="com.heitian.ssm.model.baseconfig.FunctionModel">
+        Select t1.* From (Select CFUNCTIONGUID
+        From C_POSTFUNCTION
+        Where CPOSTGUID=#{cpostguid}) t
+        Left Join C_FUNCTION t1
+        On t.CFUNCTIONGUID=t1.GUID Order By t1.GUID
+    </select>
+
+    <!--批量添加到operpostfunction-->
+    <insert id="insertOperpostfunction" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT  ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_OPERPOSTFUNCTION (CUSERID,CPOSTGUID,CFUNCTIONGUID) VALUES
+            (#{item.CUSERID},#{item.CPOSTGUID},#{item.CFUNCTIONGUID})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+    <!--更新用户信息-->
+    <update id="updateUser" parameterType="com.heitian.ssm.model.baseconfig.UserModel">
+        update C_USER
+        <trim prefix="set" suffixOverrides=",">
+            <if test="ISTEST != ''">
+                ISTEST=#{ISTEST,jdbcType=VARCHAR},
+            </if>
+            <if test="ISDISABLE != ''">
+                ISDISABLE=#{ISDISABLE,jdbcType=VARCHAR},
+            </if>
+            <if test="CUSERNAME != ''">
+                CUSERNAME=#{CUSERNAME,jdbcType=VARCHAR},
+            </if>
+            <if test="CPASSWORD != ''">
+                CPASSWORD=#{CPASSWORD,jdbcType=VARCHAR},
+            </if>
+            <if test="PHONE != ''">
+                PHONE=#{PHONE,jdbcType=VARCHAR},
+            </if>
+            <if test="CPOSTGUID != ''">
+                CPOSTGUID=#{CPOSTGUID,jdbcType=VARCHAR},
+            </if>
+            <if test="NICKNAME != ''">
+                NICKNAME=#{NICKNAME,jdbcType=VARCHAR},
+            </if>
+            <if test="SHORTER != ''">
+                SHORTER=#{SHORTER,jdbcType=VARCHAR},
+            </if>
+        </trim>
+        where CUSERID=#{CUSERID}
+    </update>
+
+    <delete id="deleteOPFByCondiction" >
+        delete from C_OPERPOSTFUNCTION where  CUSERID=#{cuserid}
+    </delete>
+
+
+    <select id="selectPF" resultType="com.heitian.ssm.model.baseconfig.CPostFunctionModel">
+        select * from C_POSTFUNCTION where CPOSTGUID = #{cpostguid}
+    </select>
+
+
+    <insert id="insetOPF" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_OPERPOSTFUNCTION
+            (CUSERID,CPOSTGUID,CFUNCTIONGUID)
+            VALUES
+            (#{item.CUSERID},#{item.CPOSTGUID},#{item.CFUNCTIONGUID})
+        </foreach>
+        select 1 from dual
+    </insert>
+
+
+    <update id="updateCpostByCuserid" parameterType="java.util.Map">
+        update C_USER set CPOSTGUID = #{cpostguid} where CUSERID = #{cuserid}
+    </update>
+
+
+
+</mapper>

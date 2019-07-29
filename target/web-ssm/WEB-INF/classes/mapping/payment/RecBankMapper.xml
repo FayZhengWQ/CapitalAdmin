@@ -1,0 +1,169 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.payment.RecBankDao">
+
+    <!--根据单位id,单位名称,数据源年份做查询(可能是多条)-->
+    <select id="queryRecBankByCndition" resultType="java.util.Map">
+        Select PNO ,
+            RECBANKNO,
+            RECBANKNAME ,
+            LINENUM ,
+            CBMUNITID,
+            to_char(GDATE,'yyyy-mm-dd hh24:mi:ss') as GDATE ,
+            Year,
+            Month,
+            C_YEAR ,
+            OPERATOR,
+            TAXID ,
+            AREAID ,
+            AREANAME,
+            LOCATION,
+            POSTCODE,
+            PHONE,
+            FAX ,
+            LINKMAN,
+            USERNAME ,
+            RECNAME,
+            POWER
+        from C_PAYMENT_RECBANK
+        where CBMUNITID=#{cbmunitid}  and C_YEAR=#{c_year} and POWER=#{POWER}
+        order by PNO DESC
+    </select>
+
+    <!--&lt;!&ndash;根据单位id,单位名称,数据源年份,数据序列修改账号,全称,开户银行&ndash;&gt;-->
+    <!--<update id="modifierRecBankByCondition" parameterType="java.util.Map">-->
+        <!--Update C_PAYMENT_RECBANK set-->
+        <!--RECBANKNO=#{recbankno} ,RECNAME=#{recname} ,RECBANKNAME=#{recbankname}-->
+        <!--where-->
+        <!--CBMUNITID=#{cbmunitid} and CBMUNITNAME=#{cbmunitname} and C_YEAR=#{cyear} and PNO=#{PNO}-->
+    <!--</update>-->
+
+    <!--添加收款单位信息-->
+    <insert id="addRecBank" parameterType="java.util.List" useGeneratedKeys="false">
+        insert into C_PAYMENT_RECBANK(
+        PNO,
+        RECBANKNO,
+        RECBANKNAME,
+        LINENUM,
+        CBMUNITID,
+        GDATE,
+        YEAR,
+        MONTH,
+        C_YEAR,
+        OPERATOR,
+        RECNAME,
+        POWER,
+        TAXID,
+        AREAID,
+        AREANAME,
+        LOCATION,
+        POSTCODE,
+        PHONE,
+        FAX,
+        LINKMAN,
+        USERNAME
+        )
+        select 'adrj'||seq_recbank.nextval, A.*  from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.RECBANKNO,jdbcType=VARCHAR},
+            #{item.RECBANKNAME,jdbcType=VARCHAR},
+            #{item.LINENUM,jdbcType=VARCHAR},
+            #{item.CBMUNITID,jdbcType=VARCHAR},
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            to_char(sysdate,'yyyy'),
+            to_char(sysdate,'mm'),
+            #{item.C_YEAR},
+            #{item.OPERATOR},
+            #{item.RECNAME,jdbcType=VARCHAR},
+            #{item.POWER,jdbcType=VARCHAR},
+            #{item.TAXID,jdbcType=VARCHAR},
+            #{item.AREAID,jdbcType=VARCHAR},
+            #{item.AREANAME,jdbcType=VARCHAR},
+            #{item.LOCATION,jdbcType=VARCHAR},
+            #{item.POSTCODE,jdbcType=VARCHAR},
+            #{item.PHONE,jdbcType=VARCHAR},
+            #{item.FAX,jdbcType=VARCHAR},
+            #{item.LINKMAN,jdbcType=VARCHAR},
+            #{item.USERNAME,jdbcType=VARCHAR}
+            from dual
+        </foreach>
+        ) A
+    </insert>
+
+    <!--插入单条，返回pno给前端-->
+    <insert id="addOneRecBank" parameterType="java.util.Map" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="PNO">
+            SELECT 'adrj'||seq_recbank.nextval from dual
+        </selectKey>
+        insert into C_PAYMENT_RECBANK (
+        PNO,
+        RECBANKNO,
+        RECBANKNAME,
+        LINENUM,
+        CBMUNITID,
+        GDATE,
+        YEAR,
+        MONTH,
+        C_YEAR,
+        OPERATOR,
+        RECNAME,
+        POWER,
+        TAXID,
+        AREAID,
+        AREANAME,
+        LOCATION,
+        POSTCODE,
+        PHONE,
+        FAX,
+        LINKMAN,
+        USERNAME
+        )
+        values
+        (
+        #{PNO},
+        #{RECBANKNO,jdbcType=VARCHAR},
+        #{RECBANKNAME,jdbcType=VARCHAR},
+        #{LINENUM,jdbcType=VARCHAR},
+        #{CBMUNITID,jdbcType=VARCHAR},
+        to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+        to_char(sysdate,'yyyy'),
+        to_char(sysdate,'mm'),
+        #{C_YEAR},
+        #{OPERATOR},
+        #{RECNAME,jdbcType=VARCHAR},
+        #{POWER,jdbcType=VARCHAR},
+        #{TAXID,jdbcType=VARCHAR},
+        #{AREAID,jdbcType=VARCHAR},
+        #{AREANAME,jdbcType=VARCHAR},
+        #{LOCATION,jdbcType=VARCHAR},
+        #{POSTCODE,jdbcType=VARCHAR},
+        #{PHONE,jdbcType=VARCHAR},
+        #{FAX,jdbcType=VARCHAR},
+        #{LINKMAN,jdbcType=VARCHAR},
+        #{USERNAME,jdbcType=VARCHAR}
+        )
+    </insert>
+    <!--判断是否存在数据-->
+    <select id="isExistRec" resultType="java.lang.Integer">
+        select COUNT (*) from C_PAYMENT_RECBANK where CBMUNITID=#{cbmunitid} and MONTH=#{month} and YEAR=#{year}
+    </select>
+
+    <!--删除已经存在的数据-->
+    <delete id="deleteRec">
+        delete from C_PAYMENT_RECBANK where CBMUNITID=#{cbmunitid} and MONTH=#{month} and YEAR=#{year}
+    </delete>
+
+    <!--批量删除recbank-->
+    <delete id="delete">
+        delete  from C_PAYMENT_RECBANK where PNO in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.PNO}
+        </foreach>
+    </delete>
+
+    <!--判断是否存在输入的RECBANKNAME-->
+    <select id="isExistRecName" resultType="com.heitian.ssm.model.payment.RecBankModel">
+        select * from C_PAYMENT_RECBANK
+        where RECNAME = #{RECNAME} and  RECBANKNAME=#{RECBANKNAME} and RECBANKNO=#{RECBANKNO}and CBMUNITID=#{CBMUNITID} and POWER = #{POWER}
+    </select>
+</mapper>

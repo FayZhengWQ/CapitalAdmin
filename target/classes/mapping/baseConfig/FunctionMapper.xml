@@ -1,0 +1,51 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.baseConfig.FunctionDao">
+
+    <resultMap id="FunctionBaseMap" type="com.heitian.ssm.model.baseconfig.FunctionModel"></resultMap>
+
+
+    <!--导航栏-->
+    <select id="selectfunction" resultMap="FunctionBaseMap">
+         select TITLE,ICON,VISIBLE,ROUTERLINK,GUID,PARENT_GUID,Level_NUM,
+         decode(ISOPEN,0,'false',1,'true') as ISOPEN,
+         decode(ISSELECTED,0,'false',1,'true') as ISSELECTED,
+         decode(ISDISABLEED,0,'false',1,'true') as ISDISABLEED
+         from  C_FUNCTION  where  GUID=#{GUID} and VISIBLE=1 order by GUID
+    </select>
+
+    <!--根据title查询functio是否存在-->
+    <select id="getFunByTitle" resultType="com.heitian.ssm.model.baseconfig.FunctionModel">
+        select * from C_FUNCTION where TITLE = #{title}
+    </select>
+
+
+    <!--获取level为1时 guid值-->
+    <select id="getMaxGuid" resultType="java.lang.Integer">
+         Select Max(GUID)+1 From C_FUNCTION Where PARENT_GUID=#{parentGuid} And LEVEL_NUM=#{levelNum} Order By GUID
+    </select>
+
+    <!--功能表创建数据-->
+    <insert id="addFunc" parameterType="com.heitian.ssm.model.baseconfig.FunctionModel">
+        Insert into C_FUNCTION
+          (TITLE,ICON,VISIBLE,ROUTERLINK,GUID,PARENT_GUID,LEVEL_NUM,OPERATOR,GDATE,YEAR,MONTH)
+        values
+          (#{TITLE},#{ICON},#{VISIBLE},#{ROUTERLINK},#{GUID},#{PARENT_GUID},#{LEVEL_NUM},#{OPERATOR},
+          to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+          to_char(sysdate,'yyyy'),to_char(sysdate,'mm'))
+    </insert>
+
+
+    <insert id="addPostFunction" parameterType="java.util.Map">
+        Insert into C_POSTFUNCTION
+          (CPOSTGUID,CFUNCTIONGUID)
+        values
+          (#{cpostguid},#{cfunctionguid})
+    </insert>
+
+    <!--根据guid修改是否可见-->
+    <update id="isViaible" parameterType="java.util.Map">
+        update C_FUNCTION set VISIBLE=#{visible} Where GUID= #{guid}
+    </update>
+
+
+</mapper>

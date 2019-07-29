@@ -1,0 +1,323 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.payment.PayMentDao">
+
+
+    <resultMap id="DprogQueryMap" type="com.heitian.ssm.model.QueryModel">
+    </resultMap>
+
+    <resultMap id="PayBaseMap" type="com.heitian.ssm.model.payment.PayModel">
+
+    </resultMap>
+
+    <resultMap id="PaymentBaseMap" type="com.heitian.ssm.model.payment.PaymentModel">
+
+    </resultMap>
+    <resultMap id="ProjectBaseMap" type="com.heitian.ssm.model.project.Project">
+
+    </resultMap>
+    <!--收款单位model-->
+    <resultMap id="RecBankBaseMap" type="com.heitian.ssm.model.payment.RecBankModel"></resultMap>
+    <!--付款单位model-->
+    <resultMap id="PayBankBaseMap" type="com.heitian.ssm.model.payment.PayBankModel"></resultMap>
+
+    <!--zfgl表查询数据-->
+    <select id="selectPayzfgl" resultMap="PayBaseMap">
+            select * from zfgl.bills b,
+                    (select r.year,r.billno,r.exchangecode,je.in_code from zfgl.returnvoucher r,jczl.enterprise je where r.year=r.year and r.exchangecode=je.isbn_code) c
+                where b.status>0 and  b.year=2018 and b.year=c.year and  b.eid=c.in_code and b.billno=c.billno
+    </select>
+
+    <!--添加拨款单-->
+    <insert id="insetpayment">
+        insert into C_PROG_PAYMENTS   (CXZPROGID,CXZPROGNAME,IMONEY,CBMUNITID,RECBANKNAME,YEAR,RECBANKNO,RECNAME,
+                    CBMUNITNAME,MONTH,GDATE,CXZENTERPRISEID,IYEAR,PAYDATE,PAYBANKNO,PAYBANKNAME,ENAME,OPERATOR,PURPOSE) VALUES
+                    (#{CXZPROGID},#{CXZPROGNAME},#{IMONEY2},#{CBMUNITID},#{RECBANKNAME},#{YEAR},#{RECBANKNO},#{RECNAME},#{CBMUNITNAME},#{MONTH},to_Date(#{GDATE},'yyyy-MM-dd'),
+                    #{CXZENTERPRISEID},#{IYEAR},to_date(#{PAYDATE},'yyyy-MM-dd'),#{PAYBANKNO},#{PAYBANKNAME},#{ENAME},#{OPERATOR},#{PURPOSE})
+    </insert>
+
+
+    <select id="selectpayment" resultMap="PaymentBaseMap">
+       Select CXZPROGID||' '||CXZPROGNAME as CPROGRAMNAME,
+               TO_CHAR(IMONEY,'FM999,999,999,999,990.00') as IMONEY,to_char(PAYDATE,'yyyy-MM-dd') as PAYDATE,
+               ENAME,PAYBANKNAME, PAYBANKNO,RECNAME,RECBANKNO,RECBANKNAME from C_PROG_PAYMENTS  where  CBMUNITID=#{CBMUNITID}  and YEAR=#{YEAR}
+    </select>
+
+    <!--获取转指标但未拨款的项目 乡镇专用-->
+    <select id="selectdprog" resultMap="ProjectBaseMap">
+        select * from C_PROGS left join
+        C_PROG on C_PROG.CXZPROGID = C_PROGS.CXZPROGID and C_PROG.CXZPROGNAME= C_PROGS.CXZPROGNAME
+        <where>
+            <if test="CBMUNITID!=''">
+                and C_PROGS.CBMUNITID=#{CBMUNITID}
+            </if>
+        </where>
+    </select>
+
+
+    <!--获取项目未拨款完的项目  街道专用-->
+    <select id="selectdprog2" resultMap="ProjectBaseMap">
+
+        select  CXZPROGNAME ,PAY_IMONEY,IMONEY ,ENTERPRISEID from C_PROG where PAY_STATE !=2 and CBMUNITID=#{CBMUNITID},CBMUNITNAME=#{CBMUNITNAME} ,IYEAR=#{IYEAR}
+
+    </select>
+
+
+    <!--插入单条拨款单-->
+    <insert id="addProPaymentsSON" parameterType="java.util.Map" useGeneratedKeys="false">
+        insert into C_PROG_PAYMENTS_SON (
+        PNO,
+        CFUNCTIONCODE1,
+        CFUNCTIONNAME1,
+        CFUNCTIONCODE2,
+        CFUNCTIONNAME2,
+        CFUNCTIONCODE3,
+        CFUNCTIONNAME3,
+        CXZPROGNAME,
+        CBMUNITID,
+        RECBANKNAME,
+        RECBANKNO,
+        RECNAME,
+        CBMUNITNAME,
+        IYEAR,
+        PURPOSE,
+        ENAME,
+        PAYBANKNO,
+        PAYBANKNAME,
+        IMONEY,
+        GDATE,
+        PAYDATE,
+        POWER,
+        CPOSTGUID,
+        OPERATOR
+        )
+        select SEQ_PROG_PAYMENTS_SON.nextval, A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.CFUNCTIONCODE1,jdbcType=VARCHAR},
+            #{item.CFUNCTIONNAME1,jdbcType=VARCHAR},
+            #{item.CFUNCTIONCODE2,jdbcType=VARCHAR},
+            #{item.CFUNCTIONNAME2,jdbcType=VARCHAR},
+            #{item.CFUNCTIONCODE3,jdbcType=VARCHAR},
+            #{item.CFUNCTIONNAME3,jdbcType=VARCHAR},
+            #{item.CXZPROGNAME,jdbcType=VARCHAR},
+            #{item.CBMUNITID,jdbcType=VARCHAR},
+            #{item.RECBANKNAME,jdbcType=VARCHAR},
+            #{item.RECBANKNO,jdbcType=VARCHAR},
+            #{item.RECNAME,jdbcType=VARCHAR},
+            #{item.CBMUNITNAME,jdbcType=VARCHAR},
+            #{item.IYEAR},
+            #{item.PURPOSE,jdbcType=VARCHAR},
+            #{item.ENAME,jdbcType=VARCHAR},
+            #{item.PAYBANKNO,jdbcType=VARCHAR},
+            #{item.PAYBANKNAME,jdbcType=VARCHAR},
+            REPLACE(#{item.IMONEY},',',''),
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            to_date(#{item.PAYDATE,jdbcType=VARCHAR},'yyyy-mm-dd hh24:mi:ss'),
+            #{item.POWER},
+            #{item.CPOSTGUID},
+            #{item.OPERATOR}
+            from dual
+        </foreach>
+        ) A
+    </insert>
+
+    <!--导入自定义拨款单-->
+    <insert id="importExcel" parameterType="com.heitian.ssm.model.payment.PayMentSonModel" useGeneratedKeys="false">
+        insert into C_PROG_PAYMENTS_SON (
+        PNO,
+        CFUNCTIONCODE1,
+        CFUNCTIONNAME1,
+        CFUNCTIONCODE2,
+        CFUNCTIONNAME2,
+        CFUNCTIONCODE3,
+        CFUNCTIONNAME3,
+        CXZPROGNAME,
+        CBMUNITID,
+        RECBANKNAME,
+        RECBANKNO,
+        RECNAME,
+        CBMUNITNAME,
+        IYEAR,
+        PURPOSE,
+        ENAME,
+        PAYBANKNO,
+        PAYBANKNAME,
+        IMONEY,
+        GDATE,
+        PAYDATE,
+        CODE,
+        STATUS,
+        EXAMER,
+        OPERATOR,
+        POWER,
+        CPOSTGUID,
+        ISPRINT
+        )
+        select SEQ_PROG_PAYMENTS_SON.nextval, A.* from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.CFUNCTIONCODE1,jdbcType=VARCHAR},
+            #{item.CFUNCTIONNAME1,jdbcType=VARCHAR},
+            #{item.CFUNCTIONCODE2,jdbcType=VARCHAR},
+            #{item.CFUNCTIONNAME2,jdbcType=VARCHAR},
+            #{item.CFUNCTIONCODE3,jdbcType=VARCHAR},
+            #{item.CFUNCTIONNAME3,jdbcType=VARCHAR},
+            #{item.CXZPROGNAME,jdbcType=VARCHAR},
+            #{item.CBMUNITID,jdbcType=VARCHAR},
+            #{item.RECBANKNAME,jdbcType=VARCHAR},
+            #{item.RECBANKNO,jdbcType=VARCHAR},
+            #{item.RECNAME,jdbcType=VARCHAR},
+            #{item.CBMUNITNAME,jdbcType=VARCHAR},
+            #{item.IYEAR},
+            #{item.PURPOSE,jdbcType=VARCHAR},
+            #{item.ENAME,jdbcType=VARCHAR},
+            #{item.PAYBANKNO,jdbcType=VARCHAR},
+            #{item.PAYBANKNAME,jdbcType=VARCHAR},
+            #{item.IMONEY,jdbcType=VARCHAR},
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            to_date(#{item.PAYDATE,jdbcType=VARCHAR},'yyyy-mm-dd hh24:mi:ss'),
+            #{item.CODE,jdbcType=VARCHAR},
+            decode(#{item.STATUS},'已审批',1,0),
+            #{item.EXAMER,jdbcType=VARCHAR},
+            #{item.OPERATOR,jdbcType=VARCHAR},
+            #{item.POWER},
+            #{item.CPOSTGUID},
+            1
+            from dual
+        </foreach>
+        ) A
+    </insert>
+
+    <!--查询自定义拨款单-->
+    <select id="getPaymentsSonList" resultType="java.util.Map">
+        select PNO,CFUNCTIONCODE1, CFUNCTIONNAME1, CFUNCTION1,CFUNCTIONCODE2, CFUNCTIONNAME2, CFUNCTION2,
+        CFUNCTIONCODE3,CFUNCTIONNAME3, CFUNCTION3,CXZPROGNAME, RECBANKNAME, RECBANKNO, RECNAME,PURPOSE,ENAME,PAYBANKNO,
+        PAYBANKNAME,IMONEY ,CHINESE_IMONEY,PAYDATE,STATUS,CBMUNITID,IYEAR,CODE,ISPRINT,EXAMER,POWER,CPOSTGUID from (
+
+
+        select to_char(PNO)PNO,to_char(CFUNCTIONCODE1) CFUNCTIONCODE1, to_char(CFUNCTIONNAME1) CFUNCTIONNAME1,
+        to_char( CFUNCTIONCODE1||''||CFUNCTIONNAME1) as CFUNCTION1,
+        to_char(CFUNCTIONCODE2) CFUNCTIONCODE2, to_char(CFUNCTIONNAME2) CFUNCTIONNAME2, to_char(CFUNCTIONCODE2
+        ||''||CFUNCTIONNAME2) as CFUNCTION2,
+        to_char(CFUNCTIONCODE3) CFUNCTIONCODE3,to_char(CFUNCTIONNAME3) CFUNCTIONNAME3,to_char(CFUNCTIONCODE3||''||CFUNCTIONNAME3)
+        as CFUNCTION3,
+        to_char(CXZPROGNAME) CXZPROGNAME, to_char(RECBANKNAME) RECBANKNAME, to_char(RECBANKNO) RECBANKNO,
+        to_char(RECNAME) RECNAME, to_char(PURPOSE)PURPOSE, to_char(ENAME) ENAME, to_char(PAYBANKNO) PAYBANKNO,
+        to_char(PAYBANKNAME) PAYBANKNAME, TO_CHAR(IMONEY,'FM999,999,999,999,990.00') as IMONEY ,
+        money_to_chinese(IMONEY) CHINESE_IMONEY,to_char(to_date(PAYDATE),'yyyy-mm-dd') PAYDATE,
+        decode(ISTHROW,1,'已作废',0,decode(STATUS,0,'未审批','已审批'))
+        STATUS,to_char(CBMUNITID) CBMUNITID,to_char(IYEAR) IYEAR,to_char(CODE) CODE,
+        decode(ISPRINT,1,'已打印','未打印') ISPRINT,to_char(EXAMER)EXAMER,to_char(POWER)POWER,to_char(CPOSTGUID)CPOSTGUID
+        from C_PROG_PAYMENTS_SON where CBMUNITID=#{CBMUNITID} and IYEAR=#{IYEAR}
+        And POWER=#{POWER}
+        <if test="CPOSTGUID==03">
+            And CPOSTGUID=#{CPOSTGUID}
+        </if>
+        <if test="STATE==1">
+            and STATUS=0 and ISTHROW=0
+        </if>
+        <if test="STATE==2">
+            and STATUS=1 and ISTHROW=0
+        </if>
+        <if test="BEGINDATE!='' and BEGINDATE!='null' and ENDDATE!='' and ENDDATE!='null'">
+            and PAYDATE between to_date(#{BEGINDATE},'yyyy-mm-dd') and to_date(#{ENDDATE},'yyyy-mm-dd')
+        </if>
+        <if test="BEGINDATE!='' and BEGINDATE!='null' and ENDDATE=='' or ENDDATE=='null'">
+            and PAYDATE &gt;= to_date(#{BEGINDATE},'yyyy-mm-dd')
+        </if>
+        <if test="ENDDATE!='' and ENDDATE!='null' and BEGINDATE=='' or BEGINDATE=='null'">
+            and PAYDATE &lt;= to_date(#{ENDDATE},'yyyy-mm-dd')
+        </if>
+
+        <if test="RECNAME!=''and RECNAME!='null'">
+            and RECNAME like '%'||#{RECNAME}||'%'
+        </if>
+        )
+        <if test="SORT==1">
+            Order By CODE ASC ,PNO ASC
+        </if>
+        <if test="SORT==0">
+            Order By CODE desc ,PNO Desc
+        </if>
+    </select>
+
+
+    <!--删除自定义拨款单-->
+    <delete id="deleteByPno">
+        delete from C_PROG_PAYMENTS_SON where pno = #{pno}
+    </delete>
+
+    <!--更新审批状态和审批人-->
+    <update id="doExam">
+        update C_PROG_PAYMENTS_SON set STATUS=1 ,EXAMER=#{EXAMER},PAYDATE=to_date(to_char(sysdate,'yyyy-mm-dd'),'yyyy-mm-dd'),
+        CODE=(select  lpad(MAX(code)+1,8,'0')  from c_prog_payments_son where cbmunitid=#{CBMUNITID}
+         and iyear=#{IYEAR} and ISTHROW=0 and CODE is not null and STATUS=1 and POWER=#{POWER})
+        where PNO = #{PNO} and IYEAR= #{IYEAR} and CBMUNITID= #{CBMUNITID}
+     </update>
+
+    <!--是否打印凭证-->
+    <update id="isPrint">
+        update C_PROG_PAYMENTS_SON set ISPRINT=1
+        where PNO = #{PNO} and IYEAR= #{IYEAR} and CBMUNITID= #{CBMUNITID}
+     </update>
+
+
+    <!--编辑-->
+    <update id="edit">
+        update C_PROG_PAYMENTS_SON set
+            CFUNCTIONCODE1=#{CFUNCTIONCODE1,jdbcType=VARCHAR},
+            CFUNCTIONNAME1=#{CFUNCTIONNAME1,jdbcType=VARCHAR},
+            CFUNCTIONCODE2=#{CFUNCTIONCODE2,jdbcType=VARCHAR},
+            CFUNCTIONNAME2=#{CFUNCTIONNAME2,jdbcType=VARCHAR},
+            CFUNCTIONCODE3=#{CFUNCTIONCODE3,jdbcType=VARCHAR},
+            CFUNCTIONNAME3=#{CFUNCTIONNAME3,jdbcType=VARCHAR},
+            RECBANKNAME=#{RECBANKNAME,jdbcType=VARCHAR},
+            RECBANKNO=#{RECBANKNO,jdbcType=VARCHAR},
+            RECNAME=#{RECNAME,jdbcType=VARCHAR},
+            CBMUNITNAME=#{CBMUNITNAME,jdbcType=VARCHAR},
+            PURPOSE=#{PURPOSE,jdbcType=VARCHAR},
+            ENAME=#{ENAME,jdbcType=VARCHAR},
+            PAYBANKNO=#{PAYBANKNO,jdbcType=VARCHAR},
+            PAYBANKNAME=#{PAYBANKNAME,jdbcType=VARCHAR},
+            IMONEY=REPLACE(#{IMONEY},',',''),
+            PAYDATE=to_date(substr(#{PAYDATE},1,10),'yyyy-mm-dd')
+        where PNO = #{PNO} and IYEAR= #{IYEAR} and CBMUNITID= #{CBMUNITID}
+    </update>
+
+    <!--批量删除-->
+    <delete id="delete">
+        delete from C_PROG_PAYMENTS_SON where PNO in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.PNO}
+        </foreach>
+    </delete>
+
+
+    <!--是否作废-->
+    <update id="isThrow">
+        update C_PROG_PAYMENTS_SON set ISTHROW = 1
+         where PNO = #{PNO} and IYEAR= #{IYEAR} and CBMUNITID= #{CBMUNITID}
+    </update>
+
+</mapper>
+
+        <!--select ''PNO,''CFUNCTIONCODE1, ''CFUNCTIONNAME1,'' as CFUNCTION1,-->
+        <!--'' CFUNCTIONCODE2, ''CFUNCTIONNAME2, '' CFUNCTION2,-->
+        <!--'' CFUNCTIONCODE3,''CFUNCTIONNAME3,'' CFUNCTION3,-->
+        <!--'' CXZPROGNAME, '合计' RECBANKNAME, '' RECBANKNO,'' RECNAME,'' PURPOSE,'' ENAME,'' PAYBANKNO,-->
+        <!--'' PAYBANKNAME, TO_CHAR(sum(IMONEY),'FM999,999,999,999,990.00') as IMONEY ,-->
+        <!--'' CHINESE_IMONEY,'' PAYDATE,-->
+        <!--'' STATUS,''CBMUNITID,''IYEAR,''CODE,-->
+        <!--'' ISPRINT,''EXAMER,''POWER,''CPOSTGUID-->
+        <!--from C_PROG_PAYMENTS_SON where CBMUNITID=#{CBMUNITID} and IYEAR=#{IYEAR}-->
+        <!--And POWER=#{POWER}-->
+        <!--<if test="CPOSTGUID==03">-->
+        <!--And CPOSTGUID=#{CPOSTGUID}-->
+        <!--</if>-->
+        <!--<if test="STATE==1">-->
+        <!--and STATUS=0 and ISTHROW=0-->
+        <!--</if>-->
+        <!--<if test="STATE==2">-->
+        <!--and STATUS=1 and ISTHROW=0-->
+        <!--</if>-->
+        <!--union all-->

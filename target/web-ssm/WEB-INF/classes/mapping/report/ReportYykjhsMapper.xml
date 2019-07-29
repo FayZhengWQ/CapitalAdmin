@@ -1,0 +1,99 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.report.ReportYykjhsDao">
+
+    <resultMap type ="java.util.HashMap" id= "cursorMap">
+        <result column ="B_ACC_CODE" property="B_ACC_CODE" />
+        <result column ="B_ACC_NAME" property="B_ACC_NAME" />
+        <result column ="ALLMONEY" property="ALLMONEY" />
+        <result column ="MONEY1" property="MONEY1" />
+        <result column ="MONEY2" property="MONEY2" />
+        <result column ="MONEY3" property="MONEY3" />
+        <result column ="MONEY4" property="MONEY4" />
+        <result column ="MONEY5" property="MONEY5" />
+        <result column ="MONEY6" property="MONEY6" />
+        <result column ="MONEY7" property="MONEY7" />
+        <result column ="MONEY8" property="MONEY8" />
+        <result column ="MONEY9" property="MONEY9" />
+        <result column ="MONEY10" property="MONEY10" />
+        <result column ="MONEY11" property="MONEY11" />
+        <result column ="MONEY12" property="MONEY12" />
+        <result column ="MONEY13" property="MONEY13" />
+        <result column ="MONEY14" property="MONEY14" />
+        <result column ="MONEY15" property="MONEY15" />
+        <result column ="MONEY16" property="MONEY16" />
+    </resultMap >
+
+    <resultMap type ="java.util.HashMap" id= "cursorMap2">
+        <result column ="OUTLAY_CODE" property="OUTLAY_CODE" />
+        <result column ="OUTLAY_NAME" property="OUTLAY_NAME" />
+        <result column ="ALLMONEY" property="ALLMONEY" />
+        <result column ="MONEY1" property="MONEY1" />
+        <result column ="MONEY2" property="MONEY2" />
+        <result column ="MONEY3" property="MONEY3" />
+        <result column ="MONEY4" property="MONEY4" />
+        <result column ="MONEY5" property="MONEY5" />
+        <result column ="MONEY6" property="MONEY6" />
+        <result column ="MONEY7" property="MONEY7" />
+        <result column ="MONEY8" property="MONEY8" />
+        <result column ="MONEY9" property="MONEY9" />
+        <result column ="MONEY10" property="MONEY10" />
+        <result column ="MONEY11" property="MONEY11" />
+        <result column ="MONEY12" property="MONEY12" />
+        <result column ="MONEY13" property="MONEY13" />
+        <result column ="MONEY14" property="MONEY14" />
+        <result column ="MONEY15" property="MONEY15" />
+        <result column ="MONEY16" property="MONEY16" />
+    </resultMap >
+
+    <resultMap type ="java.util.HashMap" id= "cursorMap3">
+        <result column ="GOV_OUTLAY_CODE" property="GOV_OUTLAY_CODE" />
+        <result column ="GOV_OUTLAY_NAME" property="GOV_OUTLAY_NAME" />
+        <result column ="ALLMONEY" property="ALLMONEY" />
+        <result column ="MONEY1" property="MONEY1" />
+        <result column ="MONEY2" property="MONEY2" />
+        <result column ="MONEY3" property="MONEY3" />
+        <result column ="MONEY4" property="MONEY4" />
+        <result column ="MONEY5" property="MONEY5" />
+        <result column ="MONEY6" property="MONEY6" />
+        <result column ="MONEY7" property="MONEY7" />
+        <result column ="MONEY8" property="MONEY8" />
+        <result column ="MONEY9" property="MONEY9" />
+        <result column ="MONEY10" property="MONEY10" />
+        <result column ="MONEY11" property="MONEY11" />
+        <result column ="MONEY12" property="MONEY12" />
+        <result column ="MONEY13" property="MONEY13" />
+        <result column ="MONEY14" property="MONEY14" />
+        <result column ="MONEY15" property="MONEY15" />
+        <result column ="MONEY16" property="MONEY16" />
+    </resultMap >
+
+
+    <!--获取用友数据库 支出功能汇总-->
+    <select id="getGnkmAllMoney" parameterType="java.util.Map" statementType="CALLABLE">
+
+         	{CALL get_yykjhs_gnkm(#{FISCAL},#{FIS_PERD},#{return_cursor, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=cursorMap})}
+
+    </select>
+
+    <!--获取用友数据库 经济科目汇总-->
+    <select id="getJjkmAllMoney" parameterType="java.util.Map" statementType="CALLABLE">
+
+         	{CALL get_yykjhs_jjkm(#{FISCAL},#{FIS_PERD},#{return_cursor, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=cursorMap2})}
+
+    </select>
+
+    <!--获取用友数据库 基本支出汇总-->
+    <select id="getJbzcAllMoney" parameterType="java.util.Map" statementType="CALLABLE">
+
+         	{CALL get_yykjhs_jbzc(#{FISCAL},#{FIS_PERD},#{return_cursor, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=cursorMap3})}
+
+    </select>
+
+
+
+
+
+
+
+
+</mapper>

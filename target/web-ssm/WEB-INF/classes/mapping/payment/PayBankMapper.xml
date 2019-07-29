@@ -1,0 +1,128 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.payment.PayBankDao">
+
+    <!--根据单位id,单位名称,数据源年份做查询-->
+    <select id="queryPayBankByCondition" parameterType="java.util.Map" resultType="java.util.Map">
+        Select PNO ,
+                PAYBANKNO ,
+                ENAME,
+                PAYBANKNAME ,
+                LINENUM ,
+                CBMUNITID ,
+                to_char(GDATE,'yyyy-mm-dd hh24:mi:ss') as GDATE ,
+                YEAR ,
+                MONTH ,
+                C_YEAR ,
+                OPERATOR ,
+                TAXID ,
+               POWER
+        from C_PAYMENT_PAYBANK
+        where CBMUNITID=#{cbmunitid} and C_YEAR=#{c_year} and POWER=#{POWER}
+        order by PNO DESC
+    </select>
+
+    <!--根据单位id,单位名称,数据源年份,数据序列修改账号,全称,开户银行-->
+    <update id="modifierPayBankByCondition" parameterType="java.util.Map">
+        Update C_PAYMENT_PAYBANK set
+          PAYBANKNO=#{PAYBANKNO}, ENAME=#{ENAME},PAYBANKNAME=#{PAYBANKNAME}
+        where
+          CBMUNITID=#{CBMUNITID} and C_YEAR=#{C_YEAR} and PNO=#{PNO}
+    </update>
+
+    <!--添加paybank数据-->
+    <insert id="addPayBank" parameterType="java.util.List" useGeneratedKeys="false">
+        insert into C_PAYMENT_PAYBANK(
+        PNO,
+        PAYBANKNO,
+        ENAME,
+        PAYBANKNAME,
+        LINENUM,
+        CBMUNITID,
+        GDATE,
+        YEAR,
+        MONTH,
+        C_YEAR,
+        OPERATOR,
+        TAXID,
+        POWER
+        )
+        select 'adrj'||seq_paybank.nextval, A.*  from(
+        <foreach collection="list" item="item" index="index" separator="UNION ALL">
+            SELECT
+            #{item.PAYBANKNO},
+            #{item.ENAME},
+            #{item.PAYBANKNAME,jdbcType=VARCHAR},
+            #{item.LINENUM,jdbcType=VARCHAR},
+            #{item.CBMUNITID},
+            to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            to_char(sysdate,'yyyy'),
+            to_char(sysdate,'mm'),
+            #{item.C_YEAR},
+            #{item.OPERATOR},
+            #{item.TAXID,jdbcType=VARCHAR},
+            #{item.POWER,jdbcType=VARCHAR}
+            from dual
+        </foreach>
+        ) A
+    </insert>
+
+    <!--插入单条，返回pno给前端-->
+    <insert id="addOnePayBank" parameterType="java.util.Map" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.String" order="BEFORE" keyProperty="PNO">
+            SELECT 'adrj'||seq_paybank.nextval from dual
+        </selectKey>
+        insert into C_PAYMENT_PAYBANK (
+        PNO,
+        PAYBANKNO,
+        ENAME,
+        PAYBANKNAME,
+        LINENUM,
+        CBMUNITID,
+        GDATE,
+        YEAR,
+        MONTH,
+        C_YEAR,
+        OPERATOR,
+        TAXID,
+        POWER
+        )
+        values
+        (
+        #{PNO},
+        #{PAYBANKNO},
+        #{ENAME},
+        #{PAYBANKNAME,jdbcType=VARCHAR},
+        #{LINENUM,jdbcType=VARCHAR},
+        #{CBMUNITID},
+        to_date(to_char(sysdate,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+        to_char(sysdate,'yyyy'),
+        to_char(sysdate,'mm'),
+        #{C_YEAR},
+        #{OPERATOR},
+        #{TAXID,jdbcType=VARCHAR},
+        #{POWER,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <select id="isExistPay" resultType="java.lang.Integer">
+        select count(*) from C_PAYMENT_PAYBANK  where CBMUNITID=#{cbmunitid} and MONTH=#{month} and YEAR=#{year}
+    </select>
+
+    <delete id="deletePay">
+        delete from C_PAYMENT_PAYBANK where CBMUNITID=#{cbmunitid} and MONTH=#{month} and YEAR=#{year}
+    </delete>
+
+    <!--批量删除payBank-->
+    <delete id="delete">
+        delete from C_PAYMENT_PAYBANK where PNO in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.PNO}
+        </foreach>
+    </delete>
+
+    <!--根据ENAME查询是否存在数据-->
+    <select id="isExistENAME" resultType="com.heitian.ssm.model.payment.PayBankModel">
+        select * from C_PAYMENT_PAYBANK
+        where ENAME = #{ENAME} and PAYBANKNO=#{PAYBANKNO} and PAYBANKNAME=#{PAYBANKNAME} and CBMUNITID=#{CBMUNITID} and POWER = #{POWER}
+    </select>
+</mapper>

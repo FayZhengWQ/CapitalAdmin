@@ -1,0 +1,692 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.report.ReportDao">
+
+    <!--报表信息-->
+    <resultMap id="ReportInfoMap" type="com.heitian.ssm.model.InfoModel">
+    </resultMap>
+
+    <!--财政资金负债表-->
+    <resultMap id="DebtBaseMap" type="com.heitian.ssm.model.DebtModel">
+    </resultMap>
+
+    <!--财政支出月算表-->
+    <resultMap id="MonthBaseMap" type="com.heitian.ssm.model.CapitalMonthModel">
+    </resultMap>
+
+    <!--预算外支出月报表-->
+    <resultMap id="EMonthBaseMap" type="com.heitian.ssm.model.CapitalEMonthModel">
+    </resultMap>
+
+    <resultMap type="java.util.Map" id="curMap">
+        <result column="ACC_CODE" property="ACC_CODE"/>
+        <result column="ACC_NAME" property="ACC_NAME"/>
+        <result column="MONEY1" property="MONEY1"/>
+        <result column="MONEY2" property="MONEY2"/>
+        <result column="MONEY3" property="MONEY3"/>
+        <result column="ACC_TYPE" property="ACC_TYPE"/>
+    </resultMap>
+
+    <resultMap type="java.util.Map" id="curMap1">
+        <result column="B_ACC_CODE" property="B_ACC_CODE"/>
+        <result column="B_ACC_NAME" property="B_ACC_NAME"/>
+        <result column="MONEY3" property="MONEY3"/>
+        <result column="MONEY5" property="MONEY5"/>
+        <result column="MONEY6" property="MONEY6"/>
+        <result column="MONEY7" property="MONEY7"/>
+        <result column="MONEY8" property="MONEY8"/>
+    </resultMap>
+
+    <resultMap type="java.util.Map" id="curMap2">
+        <result column="ACC_CODE" property="ACC_CODE"/>
+        <result column="ACC_NAME" property="ACC_NAME"/>
+        <result column="MONEY1" property="MONEY1"/>
+        <result column="MONEY2" property="MONEY2"/>
+        <result column="MONEY3" property="MONEY3"/>
+        <result column="MONEY4" property="MONEY4"/>
+        <result column="ACC_TYPE" property="ACC_TYPE"/>
+    </resultMap>
+    <resultMap type="java.util.Map" id="curMap3">
+        <result column="ACC_CODE" property="ACC_CODE"/>
+        <result column="ACC_NAME" property="ACC_NAME"/>
+        <result column="MONEY1" property="MONEY1"/>
+        <result column="MONEY2" property="MONEY2"/>
+        <result column="MONEY3" property="MONEY3"/>
+        <result column="MONEY4" property="MONEY4"/>
+    </resultMap>
+
+
+    <!--生成帐套-->
+    <insert id="insertReportId">
+        insert  into  C_REPORT_INFO (CBMUNITID,CBMUNITNAME,REPORT_NAME,REPORT_TYPE,REPORT_YEAR,REPORT_MONTH,REPORT_DATE)
+        VALUES
+        (#{CBMUNITID},#{CBMUNITNAME},#{REPORT_NAME},#{REPORT_TYPE},#{REPORT_YEAR},#{REPORT_MONTH},to_Date(#{REPORT_DATE},'yyyy-MM-dd'))
+    </insert>
+
+    <!--查询帐套是否生成-->
+    <select id="selectAccountId" resultMap="ReportInfoMap">
+        select * form C_REPORT_INFO where CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME}
+    </select>
+
+    <!--查询财政资金负债表-->
+    <select id="selectDebt" resultMap="DebtBaseMap">
+        SELECT C_ACC_NAME,C_START_MONEY,C_END_MONEY,D_ACC_NAME,D_START_MONEY,D_END_MONEY,PNO from  C_REPORT_DEBT  where CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME}
+    </select>
+    <!--查询财政支出月报表-->
+    <select id="selectMonth" resultMap="MonthBaseMap">
+        SELECT * from  C_REPORT_OUTGOINGS
+    </select>
+    <!--查询预算外支出月报表-->
+    <select id="selectEMonth" resultMap="EMonthBaseMap">
+        SELECT C_ACC_NAME,C_MONEY,PNO from C_REPORT_EMONTH
+    </select>
+
+
+    <!--导入财政资金负债表-->
+    <insert id="addDebt" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_DEBT
+            (CBMUNITID,CBMUNITNAME,C_ACC_NAME,C_START_MONEY,C_END_MONEY,D_ACC_NAME,D_START_MONEY,D_END_MONEY,DDATE,IYEAR,IMONTH,PNO)
+            VALUES
+            (#{item.CBMUNITID},#{item.CBMUNITNAME},#{item.C_ACC_NAME},#{item.C_START_MONEY},#{item.C_END_MONEY},#{item.D_ACC_NAME},#{item.D_START_MONEY},#{item.D_END_MONEY},#{item.DDATE},#{item.IYEAR},#{item.IMONTH},#{index})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+    <!--导入财政支出月报表-->
+    <insert id="addCapitalMonth" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="list" item="item">
+            INTO C_REPORT_OUTGOINGS
+            (CBMUNITID,CBMUNITNAME,C_ACC_CODE,C_ACC_NAME,PNO,P_EARLY_BUDGET,P_ADJUSTMENT,P_SUBSID,P_SUBTOTAL,
+            P_PAY_MONTH,P_PAY_CUMULATIVE,P_ACCOUNTING,O_DPAY_MONTH,O_DPAY_CUMULATIVE,O_LPAY_MONTH,O_LPAY_CUMULATIVE,DDATE,IYEAR,IMONTH)
+            VALUES
+            (#{item.CBMUNITID},#{item.CBMUNITNAME},#{item.C_ACC_CODE},#{item.C_ACC_NAME},#{item.PNO},#{item.P_EARLY_BUDGET},#{item.P_ADJUSTMENT},#{item.P_SUBSID},#{item.P_SUBTOTAL},
+            #{item.P_PAY_MONTH},#{item.P_PAY_CUMULATIVE},#{item.P_ACCOUNTING},#{item.O_DPAY_MONTH},#{item.O_DPAY_CUMULATIVE},#{item.O_LPAY_MONTH},#{item.O_LPAY_CUMULATIVE},#{item.DDATE},#{item.IYEAR},#{item.IMONTH})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+    <!--导入预算外支出月报表-->
+    <insert id="addCapitalEMonth" parameterType="java.util.List" useGeneratedKeys="false">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_EMONTH (CBMUNITID,CBMUNITNAME,C_ACC_NAME,C_MONEY,DDATE,IYEAR,IMONTH,PNO)
+            VALUES
+            (#{item.CBMUNITID},#{item.CBMUNITNAME},#{item.C_ACC_NAME},#{item.C_MONEY},#{item.DDATE},#{item.IYEAR},#{item.IMONTH},#{index})
+        </foreach>
+        SELECT 1 FROM DUAL
+    </insert>
+
+
+    <!--删除某行报表数据-->
+    <delete id="deleteReportId">
+        delete ${table} where CBMUNITID=#{CBMUNITID} and CBMUNITNAME=#{CBMUNITNAME} and PNO=#{PNO}
+    </delete>
+
+    <!--生成临时表-->
+    <select id="createTempDept" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL get_yykjhs_debt(#{CO_CODE},#{FISCAL},#{FIS_PERD},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap})}
+    </select>
+
+    <!--判断本地数据库是否存在资金负债-->
+    <select id="isExitBalanceSheet" resultType="java.lang.String">
+        select count(*) from C_REPORT_DEBT where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd}  and CO_CODE=#{co_code}
+    </select>
+
+    <!--删除本地库的资金负债数据-->
+    <delete id="deleteBalanceSheet">
+        delete from C_REPORT_DEBT where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE=#{co_code}
+    </delete>
+
+    <!--把数据插入到本地库-->
+    <insert id="addBalanceSheetData">
+        insert into C_REPORT_DEBT  (
+            ACC_CODE,ACC_NAME,MONEY1,MONEY2,MONEY3,FISCAL,FIS_PERD,CO_CODE
+            )
+            values
+            (#{ACC_CODE,jdbcType=VARCHAR},#{ACC_NAME},#{MONEY1,jdbcType=VARCHAR},#{MONEY2,jdbcType=VARCHAR},#{MONEY3,jdbcType=VARCHAR},#{FISCAL},#{FIS_PERD},#{CO_CODE})
+    </insert>
+
+
+    <select id="debtList" resultType="java.util.Map">
+        select * from C_REPORT_DEBT WHERE FISCAL = #{FISCAL} and FIS_PERD = #{FIS_PERD}
+    </select>
+
+    <!--判断本地库是否存在数据-->
+    <select id="isExistExcute" resultType="java.lang.Integer">
+        select count(*) from C_REPORT_EXCEUTE where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </select>
+
+    <!--删除本地库中的数据-->
+    <delete id="deleteExcute">
+        delete from C_REPORT_EXCEUTE where FISCAL=#{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </delete>
+
+    <!--获取用友数据库 -->
+    <select id="doExcute" parameterType="java.util.Map" statementType="CALLABLE">
+          {CALL get_yykjhs_exceute(#{CO_CODE},#{FIS_YEAR},#{FIS_MONTH},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap1})}
+    </select>
+
+    <!--添加到本地库-->
+    <insert id="addExceute">
+        insert into C_REPORT_EXCEUTE (B_ACC_CODE,B_ACC_NAME,CO_CODE,FIS_PERD,FISCAL,MONEY3,MONEY4,MONEY6,MONEY8,PLAN,INDECREASE2)
+         values(#{B_ACC_CODE},#{B_ACC_NAME},#{CO_CODE},#{FIS_PERD},#{FISCAL},#{MONEY3,jdbcType=VARCHAR},
+         #{MONEY4,jdbcType=VARCHAR},#{MONEY6,jdbcType=VARCHAR},#{MONEY8,jdbcType=VARCHAR},#{PLAN,jdbcType=VARCHAR},#{INDECREASE2,jdbcType=VARCHAR})
+    </insert>
+
+    <!--更新本地库-->
+    <update id="updateExceute">
+        update C_REPORT_EXCEUTE
+               SET MONEY2=#{MONEY2,jdbcType=VARCHAR},
+                MONEY4=#{MONEY4,jdbcType=VARCHAR},
+                PLAN=#{PLAN,jdbcType=VARCHAR},
+                MONEY8=#{MONEY8,jdbcType=VARCHAR},
+                INDECREASE2=#{INDECREASE2,jdbcType=VARCHAR}
+        where FISCAL = #{FISCAL} and FIS_PERD=#{FIS_PERD} and B_ACC_CODE = #{B_ACC_CODE,jdbcType=VARCHAR} AND CO_CODE=#{CO_CODE}
+    </update>
+
+    <!--[执行表]查看-->
+    <select id="getExceuteList" resultType="java.util.Map">
+        <!-- Select co_code,fiscal,fis_perd,''b_acc_code,'总计'b_acc_name,
+                  sum(money1) As money1,
+                  sum(money2) As money2,
+                  sum(money3) As money3,
+                  Sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)) As money4,
+                  sum(money5) As money5,
+                  sum(money6) As money6,
+        decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1)) As Plan,
+                  sum(money7) As money7,
+                  sum(money8) As money8,
+                  sum(indecrease1) As indecrease1,
+                  sum(indecrease2) As indecrease2,
+                  'true' As isDisabled
+          From c_report_exceute Where co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} Group By co_code,fiscal,fis_perd
+          Union All -->
+        Select * From (
+        Select co_code,fiscal,fis_perd,b_acc_code,b_acc_name,
+        sum(money1) money1,
+        sum(money2) money2,
+        sum(money3) money3,
+        Sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)) as money4,
+        sum(money5) money5,
+        sum(money6) money6,
+        decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1))
+        As Plan,
+        sum(money7) money7,
+        sum(money8) money8,
+        sum(indecrease1) indecrease1,
+        sum(indecrease2) indecrease2,
+        'false' As isDisabled
+        From c_report_exceute Where co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} group by
+        co_code,fiscal,fis_perd,b_acc_code,b_acc_name,plan Order By B_ACC_CODE
+        )
+    </select>
+
+
+    <!--[执行表]下载（含千分位）-->
+    <select id="getExceuteList2" resultType="java.util.Map">
+         Select  '' As Id,co_code,fiscal,fis_perd,''b_acc_code,'总计'b_acc_name,
+       to_char(Sum(money1),'FM999,999,999,999,990.00') As money1,
+       to_char(Sum(money2),'FM999,999,999,999,990.00') As money2,
+       to_char(Sum(money3),'FM999,999,999,999,990.00') As money3,
+       to_char( Sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),'FM999,999,999,999,990.00') As money4,
+       to_char(Sum(money5),'FM999,999,999,999,990.00') As money5,
+       to_char(Sum(money6),'FM999,999,999,999,990.00') As money6,
+       decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1)) As Plan,
+       to_char(Sum(money7),'FM999,999,999,999,990.00') As money7,
+       to_char(Sum(money8),'FM999,999,999,999,990.00') As money8,
+       to_char(sum(indecrease1),'FM999,999,999,999,990.00') As indecrease1,
+       to_char(sum(indecrease2),'FM999,999,999,999,990.00') As indecrease2,
+       'True' As isDisabled
+       From c_report_exceute Where co_code=#{co_code} And fiscal=#{fiscal}  And fis_perd=#{fis_perd} Group By co_code,fiscal,fis_perd
+       Union All
+        Select to_char(Rownum) As Id,t.* From(
+        Select co_code,fiscal,fis_perd,b_acc_code,b_acc_name,
+              to_char(sum(money1),'FM999,999,999,999,990.00') As money1  ,
+              to_char(sum(money2),'FM999,999,999,999,990.00')As money2,
+              to_char(Sum(money3),'FM999,999,999,999,990.00')As money3,
+              to_char( Sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),'FM999,999,999,999,990.00')As money4,
+              to_char(Sum(money5),'FM999,999,999,999,990.00')As money5,
+              to_char(Sum(money6),'FM999,999,999,999,990.00')As money6,
+              to_char(decode(nvl(Sum(money4),0),0,'',ROUND(Sum(money6)/Sum(money4)*100,1))) As Plan,
+              to_char(Sum(money7),'FM999,999,999,999,990.00')As money7,
+              to_char(Sum(money8),'FM999,999,999,999,990.00')As money8,
+              to_char(Sum(indecrease1))As indecrease1,
+              to_char(Sum(indecrease2))As indecrease2,
+              'false' As isDisabled
+        From c_report_exceute Where co_code=#{co_code} And fiscal=#{fiscal}  And fis_perd=#{fis_perd}
+        group by co_code,fiscal,fis_perd,b_acc_code,b_acc_name,plan  Order By B_ACC_CODE
+       )t
+
+    </select>
+
+    <!--[执行表]更新年初数updateExcuEYear-->
+    <update id="updateExcuEYear">
+       Update C_REPORT_EXCEUTE a
+       Set a.MONEY1=( select money from c_report_earlyyear Where FISCAL=a.FISCAL And CO_CODE=a.CO_CODE And B_ACC_CODE=a.B_ACC_CODE )
+       Where FISCAL = #{fiscal} and CO_CODE=#{co_code}  And  FIS_PERD=#{fis_perd}
+    </update>
+
+
+    <!--判断本地库是否存在预算支出数据-->
+    <select id="isExit" resultType="java.lang.Integer">
+        select count(*) from C_REPORT_OUTGOINGS where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd}  and CO_CODE=#{co_code}
+    </select>
+
+    <!--删除本地库的预算支出数据-->
+    <delete id="deleteBudget">
+        delete from C_REPORT_OUTGOINGS where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE=#{co_code}
+    </delete>
+
+    <!--从用友数据库获取数据-->
+    <select id="doPayMonth" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL get_yykjhs_outgoings_xz(#{CO_CODE},#{FISCAL},#{FIS_PERD},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap1})}
+    </select>
+
+    <!--把数据插入到本地库-->
+    <insert id="addData">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_OUTGOINGS
+            (
+            B_ACC_CODE,
+            B_ACC_NAME,
+            CO_CODE,
+            FIS_PERD,
+            FISCAL,
+            MONEY3,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            MONEY7,
+            MONEY8,
+            IS_LOWEST
+            )
+            VALUES (
+            #{item.B_ACC_CODE,jdbcType=VARCHAR},
+            #{item.B_ACC_NAME},
+            #{item.CO_CODE},
+            #{item.FIS_PERD},
+            #{item.FISCAL},
+            #{item.MONEY3,jdbcType=VARCHAR},
+            #{item.MONEY4,jdbcType=VARCHAR},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.MONEY7,jdbcType=VARCHAR},
+            #{item.MONEY8,jdbcType=VARCHAR},
+            #{item.IS_LOWEST,jdbcType=VARCHAR}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--更新支出表数据-->
+    <update id="updatePayMonth">
+        update C_REPORT_OUTGOINGS
+        <trim prefix="set" suffixOverrides=",">
+            <if test="MONEY2 != '' and MONEY2 != 'null' ">
+                MONEY2=#{MONEY2,jdbcType=VARCHAR},
+            </if>
+            <if test="MONEY4 != '' and MONEY4 != 'null' ">
+                MONEY4=#{MONEY4,jdbcType=VARCHAR},
+            </if>
+            <if test="PLAN != '' and PLAN != 'null' ">
+                PLAN=#{PLAN,jdbcType=VARCHAR},
+            </if>
+        </trim>
+        where FISCAL = #{FISCAL} and FIS_PERD=#{FIS_PERD} and B_ACC_CODE = #{B_ACC_CODE,jdbcType=VARCHAR} AND
+        CO_CODE=#{CO_CODE}
+    </update>
+
+
+    <!--【支出表】获取本地库的预算支出数据-->
+    <select id="getBudget" resultType="java.util.Map">
+        <!--Select co_code,''b_acc_code,'总计'b_acc_name,
+             sum(money1) As money1,
+             sum(money2) As money2,
+         sum(money3) As money3,
+         sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)) As money4,
+         sum(money5) As money5,
+         sum(money6) As money6,
+         decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1)) As Plan,
+         sum(money7) As money7,
+         sum(money8) As money8,
+         FISCAL,FIS_PERD,'TRUE' As isDisabled
+     From c_report_outgoings
+     Where co_code=#{CO_CODE} And fiscal=#{FISCAL} And fis_perd=#{FIS_PERD} And length(B_ACC_CODE)=3 Group By co_code,fiscal,fis_perd
+        Union All-->
+        Select to_char(Rownum) As Id,t.* From((Select co_code,b_acc_code,b_acc_name,
+        sum(money1) money1,
+        sum(money2) money2,
+        sum(money3) money3,
+        sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)) As money4,
+        sum(money5) money5,
+        sum(money6) money6,
+        decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1))
+        As Plan,
+        sum(money7) money7,
+        sum(money8) money8,fiscal,fis_perd,
+        decode(length(B_ACC_CODE),3,decode(B_ACC_CODE,'227','false','true'),5,'true',7,'false') As isDisabled,IS_LOWEST
+        From c_report_outgoings Where co_code=#{CO_CODE} And fiscal=#{FISCAL} And fis_perd=#{FIS_PERD}
+        group by co_code,b_acc_code,b_acc_name ,Plan,fiscal,fis_perd,is_lowest Order By b_acc_code)t)
+
+    </select>
+
+    <!--【支出表】导出获取本地库的预算支出数据(含千分位)-->
+    <select id="getBudget2" resultType="java.util.Map">
+      Select '' As Id, co_code,''b_acc_code,'总计'b_acc_name,
+            to_char(Sum(money1),'FM999,999,999,999,990.00') As money1,
+            to_char(Sum(money2),'FM999,999,999,999,990.00') As money2,
+            to_char(Sum(money3),'FM999,999,999,999,990.00') As money3,
+            to_char(  sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)) ,'FM999,999,999,999,990.00') As money4,
+            to_char(Sum(money5),'FM999,999,999,999,990.00') As money5,
+            to_char(Sum(money6),'FM999,999,999,999,990.00') As money6,
+           decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1)) As Plan,
+            to_char(Sum(money7),'FM999,999,999,999,990.00') As money7,
+            to_char(Sum(money8),'FM999,999,999,999,990.00') As money8,
+            to_char(Sum(money9),'FM999,999,999,999,990.00') As money9,
+            to_char(Sum(money10),'FM999,999,999,999,990.00') As money10,FISCAL,FIS_PERD,'true' As isDisabled
+       From c_report_outgoings Where  co_code=#{CO_CODE} And fiscal=#{FISCAL}  And fis_perd=#{FIS_PERD} And length(B_ACC_CODE)=3
+            Group By co_code,fiscal,fis_perd
+       Union All
+ Select to_char(Rownum) As Id,t.* from(Select  co_code,b_acc_code,b_acc_name,to_char(sum(money1),'FM999,999,999,999,990.00') As money1,
+        to_char(Sum(money2),'FM999,999,999,999,990.00') As money2,
+        to_char(Sum(money3),'FM999,999,999,999,990.00') As money3,
+        to_char(  sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)) ,'FM999,999,999,999,990.00') As money4,
+        to_char(Sum(money5),'FM999,999,999,999,990.00') As money5,
+        to_char(Sum(money6),'FM999,999,999,999,990.00') As money6,
+        decode(sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0)),0,'',ROUND(Sum(money6)/sum(nvl(money1,0)+nvl(money2,0)+nvl(money3,0))*100,1)) As Plan,
+        to_char(Sum(money7),'FM999,999,999,999,990.00') As money7,
+        to_char(Sum(money8),'FM999,999,999,999,990.00') As money8,
+        to_char(Sum(money9),'FM999,999,999,999,990.00') As money9,
+        to_char(Sum(money10),'FM999,999,999,999,990.00') As money10,
+        fiscal,fis_perd,decode(length(b_acc_code),3,'true',5,'true',7,'false') As isDisabled
+       From c_report_outgoings Where  co_code=#{CO_CODE} And fiscal=#{FISCAL}  And fis_perd=#{FIS_PERD}
+       Group By  co_code,b_acc_code,b_acc_name, fiscal,fis_perd,Plan  Order By b_acc_code) t 
+       where     t.MONEY1 is not null or t.MONEY2 is not null or t.MONEY3 is not null or
+       t.MONEY4 !='0.00' or t.MONEY5 is not null or t.MONEY6 is not null Or t.PLAN Is Not Null
+       or t.MONEY8 is not null or  t.MONEY7 is not null
+
+      </select>
+
+    <!--[支出表]更新年初数-->
+    <update id="updateOUTEYear">
+      Update C_REPORT_OUTGOINGS a
+       Set a.MONEY1=( select money from c_report_earlyyear Where FISCAL=a.FISCAL And CO_CODE=a.CO_CODE And B_ACC_CODE=a.B_ACC_CODE )
+       Where FISCAL = #{fiscal} and CO_CODE=#{co_code}  And  FIS_PERD=#{fis_perd}
+    </update>
+
+    <!--[支出表]获取对应关系-->
+    <select id="getRelation" resultType="java.util.Map">
+        select outlay_code,outlay_name,gov_outlay_code,gov_outlay_name
+        from  gl_outlaytype  where CO_CODE=#{co_code}   and FISCAL=#{fiscal}
+        Group By outlay_code,outlay_name,gov_outlay_code,gov_outlay_name order by outlay_code
+    </select>
+
+
+    <!--[教育表]判断是否存在数据-->
+    <select id="isExitEdu" resultType="java.lang.Integer">
+         select count(*) from C_REPORT_EDUCATION where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd}  and CO_CODE=#{co_code}
+    </select>
+
+    <!--[教育表] 删除本地库数据-->
+    <delete id="deleteEdu">
+         delete from C_REPORT_EDUCATION where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE=#{co_code}
+    </delete>
+
+    <!--[教育表]调用存储过程-->
+    <select id="doEdu" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL get_yykjhs_education(#{CO_CODE},#{FIS_YEAR},#{FIS_MONTH},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap2})}
+    </select>
+
+    <!--[教育表] 插入数据到本地-->
+    <insert id="addEdu">
+        insert into C_REPORT_EDUCATION (ACC_CODE,ACC_NAME,CO_CODE,FIS_PERD,FISCAL,MONEY1,MONEY2,MONEY3,MONEY4,ACC_TYPE)
+            values
+            (#{ACC_CODE},#{ACC_NAME},#{CO_CODE},#{FIS_PERD},#{FISCAL},#{MONEY1,jdbcType=VARCHAR},
+         #{MONEY2,jdbcType=VARCHAR},#{MONEY3,jdbcType=VARCHAR},#{MONEY4,jdbcType=VARCHAR},#{ACC_TYPE})
+    </insert>
+
+    <!--[教育表] 获取本地库数据-->
+    <select id="getEdu" resultType="java.util.Map">
+       Select  co_code, fiscal,fis_perd, '4'As acc_code,'收入'As acc_name,Sum(money1) As money1,Sum(money2) As money2,Sum(money3) As money3,Sum(money4) As money4 ,'true' As isDisabled From c_report_education Where acc_type=4 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd}  Group By co_code,fiscal,fis_perd
+      Union All
+      Select * from(Select co_code,fiscal,fis_perd,acc_code,decode(acc_code,461201,'  其中：'||acc_name,'    '||acc_name),money1,money2,money3,money4  ,decode(acc_code,461201,'true','false') As isDisabled From c_report_education Where acc_type=4 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} Order By acc_code)
+      Union All
+      Select co_code,fiscal,fis_perd,'5'As acc_code,'支出'As acc_name,Sum(money1) As money1,Sum(money2) As money2,Sum(money3) As money3,Sum(money4) As money4  ,'true' As isDisabled From c_report_education Where acc_type=5 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} Group By co_code,fiscal,fis_perd
+      Union All
+      Select * from(Select co_code,fiscal,fis_perd,acc_code, decode(acc_code,590401,'  其中：'||acc_name,'    '||acc_name),money1,money2,money3,money4  ,decode(acc_code,590401,'true','false') As isDisabled From c_report_education Where acc_type=5 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} Order By acc_code)
+    </select>
+
+    <!--[教育表]编辑数据-->
+    <update id="updateEdu">
+        update C_REPORT_EDUCATION SET
+                MONEY1=#{MONEY1,jdbcType=VARCHAR},
+                MONEY2=#{MONEY2,jdbcType=VARCHAR},
+                MONEY3=#{MONEY3,jdbcType=VARCHAR},
+                MONEY4=#{MONEY4,jdbcType=VARCHAR}
+        where FISCAL = #{FISCAL} and FIS_PERD=#{FIS_PERD} and ACC_CODE = #{ACC_CODE,jdbcType=VARCHAR}
+    </update>
+
+    <!--[教育表]下载时获取数据（含千分位）-->
+    <select id="getEdu2" resultType="java.util.Map">
+        Select  co_code, fiscal,fis_perd, ''As acc_code,'收入'As acc_name,to_char(Sum(money1),'FM999,999,999,999,990.00') As money1,to_char(Sum(money2),'FM999,999,999,999,990.00') As money2,to_char(Sum(money3),'FM999,999,999,999,990.00') As money3,to_char(Sum(money4),'FM999,999,999,999,990.00') As money4 ,'true' As isDisabled From c_report_education Where acc_type=4 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd}  Group By co_code,fiscal,fis_perd
+        Union All
+        Select * from(Select co_code,fiscal,fis_perd,acc_code,decode(acc_code,461201,'  其中：'||acc_name,'    '||acc_name),to_char(money1,'FM999,999,999,999,990.00') As money1,to_char(money2,'FM999,999,999,999,990.00') As money2,to_char(money3,'FM999,999,999,999,990.00') As money3,to_char(money4,'FM999,999,999,999,990.00') As money4  ,decode(acc_code,461201,'true','false') As isDisabled From c_report_education Where acc_type=4 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} Order By acc_code)
+        Union All
+        Select co_code,fiscal,fis_perd,''As acc_code,'支出'As acc_name,to_char(Sum(money1),'FM999,999,999,999,990.00') As money1,to_char(Sum(money2),'FM999,999,999,999,990.00') As money2,to_char(Sum(money3),'FM999,999,999,999,990.00') As money3,to_char(Sum(money4),'FM999,999,999,999,990.00') As money4  ,'true' As isDisabled From c_report_education Where acc_type=5 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd}  Group By co_code,fiscal,fis_perd
+        Union All
+        Select * from(Select co_code,fiscal,fis_perd,acc_code, decode(acc_code,590401,'  其中：'||acc_name,'    '||acc_name),to_char(money1,'FM999,999,999,999,990.00') As money1,to_char(money2,'FM999,999,999,999,990.00') As money2,to_char(money3,'FM999,999,999,999,990.00') As money3,to_char(money4,'FM999,999,999,999,990.00') As money4  ,decode(acc_code,590401,'true','false') As isDisabled From c_report_education Where acc_type=5 And co_code=#{co_code} And fiscal=#{fiscal} And fis_perd=#{fis_perd} Order By acc_code)
+    </select>
+
+    <!--[专户表]判断本地库是否存在数据-->
+    <select id="isExitSpe" resultType="java.lang.Integer">
+         select count(*) from C_REPORT_SPECIALR where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd}  and CO_CODE=#{co_code}
+    </select>
+
+    <!--[专户表]删除本地库数据-->
+    <delete id="deleteSpe">
+         delete from C_REPORT_SPECIALR where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE=#{co_code}
+    </delete>
+
+    <!--[专户表]调用存储过程-->
+    <select id="doSpe" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL get_yykjhs_specialr(#{CO_CODE},#{FISCAL},#{FIS_PERD},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap3})}
+    </select>
+
+    <!--[专户表]插入本地数据库-->
+    <insert id="addSpe">
+         insert into C_REPORT_SPECIALR (ACC_CODE,ACC_NAME,CO_CODE,FIS_PERD,FISCAL,MONEY1,MONEY2,MONEY3,MONEY4)
+            values
+            (#{ACC_CODE},#{ACC_NAME},#{CO_CODE},#{FIS_PERD},#{FISCAL},#{MONEY1,jdbcType=VARCHAR},
+         #{MONEY2,jdbcType=VARCHAR},#{MONEY3,jdbcType=VARCHAR},#{MONEY4,jdbcType=VARCHAR})
+    </insert>
+
+    <!--[专户表]查看获取本地数据库-->
+    <select id="getSpe" resultType="java.util.Map">
+       Select * from(select * from c_report_specialr Where co_code=#{co_code} And fiscal=#{fiscal}  And fis_perd=#{fis_perd} Order By acc_code)
+        Union All
+
+        Select Null As co_code, Null As fiscal,Null As fis_perd,Null As acc_code,'合计'acc_name,Sum(money1) As money1,Sum(money2) As money2,Sum(money3) As money3,Sum(money4) As money4
+        from c_report_specialr Where co_code=#{co_code} And fiscal=#{fiscal}  And fis_perd=#{fis_perd}  and length(acc_code)=6
+    </select>
+
+    <!--[专户表]下载获取本地数据库(含千分位)-->
+    <select id="getSpe2" resultType="com.heitian.ssm.model.report.SpecialrModel">
+       Select * from(select co_code,fiscal,fis_perd,acc_code,acc_name,to_char(money1,'FM999,999,999,999,990.00') As money1,to_char(money2,'FM999,999,999,999,990.00') As money2,to_char(money3,'FM999,999,999,999,990.00') As money3,to_char(money4,'FM999,999,999,999,990.00') As money4 from c_report_specialr Where co_code=#{co_code} And fiscal=#{fiscal}  And fis_perd=#{fis_perd} Order By ACC_CODE)
+        Union All
+        Select Distinct Null As co_code, Null As fiscal,Null As fis_perd,Null As acc_code,''acc_name,Null As money1,Null As money2,Null As money3,Null As money4
+        from c_report_specialr
+        Union All
+        Select Distinct Null As co_code, Null As fiscal,Null As fis_perd,Null As acc_code,''acc_name,Null As money1,Null As money2,Null As money3,Null As money4
+        from c_report_specialr
+        Union All
+        Select Distinct Null As co_code, Null As fiscal,Null As fis_perd,Null As acc_code,''acc_name,Null As money1,Null As money2,Null As money3,Null As money4
+        from c_report_specialr
+        Union All
+        Select Null As co_code, Null As fiscal,Null As fis_perd,Null As acc_code,'合计'acc_name,to_char(Sum(money1),'FM999,999,999,999,990.00') As money1,to_char(Sum(money2),'FM999,999,999,999,990.00') As money2,to_char(Sum(money3),'FM999,999,999,999,990.00') As money3,to_char(Sum(money4),'FM999,999,999,999,990.00') As money4
+        from c_report_specialr Where co_code=#{co_code} And fiscal=#{fiscal}  And fis_perd=#{fis_perd}  and length(acc_code)=6
+
+    </select>
+    <!--[收入支出表]判断本地库是否存在数据-->
+    <select id="isExistIncome" resultType="java.lang.Integer">
+        select COUNT(*) from C_REPORT_INCOME where FISCAL = #{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE= #{co_code}
+    </select>
+    <!--[收入支出表]向本地库插入数据-->
+    <insert id="addIncome">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_INCOME
+            (
+            GL_ITEM_CODE,
+            GL_ITEM_NAME,
+            MONEY1,
+            MONEY2,
+            MONEY3,
+            PROPORTION1,
+            MONEY4,
+            MONEY5,
+            MONEY6,
+            PROPORTION2,
+            FISCAL,
+            FIS_PERD,
+            CO_CODE,
+            SETID
+            )
+            VALUES (
+            #{item.GL_ITEM_CODE},
+            #{item.GL_ITEM_NAME},
+            #{item.MONEY1},
+            #{item.MONEY2},
+            #{item.MONEY3},
+            #{item.PROPORTION1},
+            #{item.MONEY4},
+            #{item.MONEY5},
+            #{item.MONEY6},
+            #{item.PROPORTION2},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.CO_CODE},
+            0
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[收入支出表]更新本地库数据-->
+    <update id="updateIncome">
+        update C_REPORT_INCOME
+        <trim prefix="set" suffixOverrides=",">
+            <if test="MONEY1 != '' and MONEY1 != 'null'">
+                MONEY1=#{MONEY1,jdbcType=VARCHAR},
+            </if>
+            <if test="MONEY2 != '' and MONEY2 != 'null'">
+                MONEY2=#{MONEY2,jdbcType=VARCHAR},
+            </if>
+            <if test="MONEY3 != '' and MONEY3 != 'null'">
+                MONEY3=#{MONEY3,jdbcType=VARCHAR},
+            </if>
+            <if test="PROPORTION1 != '' and PROPORTION1 != 'null'">
+                PROPORTION1=#{PROPORTION1,jdbcType=VARCHAR},
+            </if>
+            <if test="MONEY4 != '' and MONEY4 != 'null'">
+                MONEY4=#{MONEY4,jdbcType=VARCHAR},
+            </if>
+            <if test="MONEY5 != '' and MONEY5 != 'null'">
+                MONEY5=#{MONEY5,jdbcType=VARCHAR},
+            </if>
+            <if test="MONEY6 != '' and MONEY6 != 'null'">
+                MONEY6=#{MONEY6,jdbcType=VARCHAR},
+            </if>
+            <if test="PROPORTION2 != '' and PROPORTION2 != 'null'">
+                PROPORTION2=#{PROPORTION2,jdbcType=VARCHAR},
+            </if>
+        </trim>
+        where FISCAL = #{FISCAL} and FIS_PERD=#{FIS_PERD} and GL_ITEM_CODE = #{GL_ITEM_CODE}
+    </update>
+
+    <!--[收入支出表]下发-->
+    <update id="send">
+        update C_REPORT_INCOME set SETID = 1 where FISCAL= #{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </update>
+
+    <!--[收入支出表]回退-->
+    <update id="back">
+        update C_REPORT_INCOME set SETID = 0 where FISCAL= #{fiscal} and FIS_PERD = #{fis_perd} and CO_CODE= #{co_code}
+    </update>
+
+    <!--[收入支出表]查看-->
+    <select id="getIncome" resultType="java.util.Map">
+      Select * From c_report_income where FISCAL= #{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE = #{co_code} Order By GL_ITEM_CODE
+    </select>
+
+    <!--[收入支出表]下载-->
+    <select id="getIncome2" resultType="java.util.Map">
+        Select GL_ITEM_CODE,GL_ITEM_NAME,
+       to_char(MONEY1,'FM999,999,999,999,990.00') MONEY1,
+       to_char(MONEY2,'FM999,999,999,999,990.00') MONEY2,
+       to_char(MONEY3,'FM999,999,999,999,990.00') MONEY3,
+       proportion1,
+       to_char(MONEY4,'FM999,999,999,999,990.00') MONEY4,
+       to_char(MONEY5,'FM999,999,999,999,990.00') MONEY5,
+       to_char(MONEY6,'FM999,999,999,999,990.00') MONEY6,
+       proportion2,
+       CO_CODE,
+       FISCAL,
+       FIS_PERD
+      From c_report_income where  FISCAL= #{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE = #{co_code} Order By GL_ITEM_CODE
+    </select>
+    <!--[收入表]删除本地数据库数据-->
+    <delete id="deleteIncome">
+        delete  from C_REPORT_INCOME where FISCAL= #{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE = #{co_code}
+    </delete>
+
+    <!--[年初数]判断本地库年初数表是否存在-->
+    <select id="isExistEYear" resultType="java.lang.Integer">
+        select count(*) from  C_REPORT_EARLYYEAR where FISCAL = #{fiscal} and CO_CODE = #{co_code}
+    </select>
+
+    <!--[年初数]从用友获取数据-->
+    <select id="getEYearForm18" resultType="java.util.Map">
+         select b_acc_code,b_acc_name from  gl_bacc  where co_code=#{co_code}   and FISCAL=#{fiscal}  order by b_acc_code
+    </select>
+
+    <!--[年初数]插入本地数据库-->
+    <insert id="addEyear">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index">
+            INTO C_REPORT_EARLYYEAR
+            (
+            B_ACC_CODE,
+            B_ACC_NAME,
+            FISCAL,
+            CO_CODE
+            )
+            VALUES (
+            #{item.B_ACC_CODE},
+            #{item.B_ACC_NAME},
+            #{item.FISCAL},
+            #{item.CO_CODE}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <!--[年初数]查看向前端展示数据-->
+    <select id="getEYear" resultType="java.util.Map">
+        Select to_char(Rownum) As Id,t.* from(
+             (Select to_char(FISCAL) FISCAL,CO_CODE,B_ACC_CODE,B_ACC_NAME,MONEY ,
+             decode(length(B_ACC_CODE),3,decode(B_ACC_CODE,'227','false','true'),5,'true',7,'false')  ISDISABLED
+             from  c_report_earlyyear Where CO_CODE=#{co_code} And FISCAL=#{fiscal} Order By B_ACC_CODE)t
+        )
+    </select>
+
+    <!--[年初数]编辑-->
+    <update id="updateEarlYear">
+      update C_REPORT_EARLYYEAR set
+        MONEY=#{MONEY,jdbcType=VARCHAR}
+      where FISCAL= #{FISCAL} and B_ACC_CODE=#{B_ACC_CODE} and CO_CODE=#{CO_CODE}
+    </update>
+
+</mapper>

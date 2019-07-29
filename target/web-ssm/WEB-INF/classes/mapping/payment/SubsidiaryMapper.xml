@@ -1,0 +1,134 @@
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.payment.SubsidiaryDao">
+<!--判断是否已经生成上年结余-->
+    <select id="isExistLastBanlance" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM C_PAYMENT_SUBSIDIARY WHERE YEAR=#{YEAR} AND MONTH =0 AND DAY=0 AND CBMUNITID=#{CBMUNITID} AND ACCOUNTGUID=#{ACCOUNTGUID}AND POWER=#{POWER}
+    </select>
+
+    <!--判断当天当账簿是否已经生成过数据-->
+    <select id="isExistSubsidiary" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM C_PAYMENT_SUBSIDIARY WHERE YEAR=#{YEAR} AND MONTH =#{MONTH} AND DAY=#{DAY} AND CBMUNITID=#{CBMUNITID} AND ACCOUNTGUID=#{ACCOUNTGUID}AND POWER=#{POWER}
+    </select>
+    <!--更新当天当账簿第一条的pno为0-->
+    <update id="updateFirstSub">
+        UPDATE  C_PAYMENT_SUBSIDIARY SET PNO=lpad(0,3,'0'),GUID= #{YEAR}||'-'||#{MONTH}||'-'||#{DAY}||'-'||'000' WHERE YEAR=#{YEAR} AND MONTH =#{MONTH} AND DAY=#{DAY} AND CBMUNITID=#{CBMUNITID} AND ACCOUNTGUID=#{ACCOUNTGUID} AND PNO IS NULL AND POWER=#{POWER}
+    </update>
+    <!--添加单条的银行存款明细记录和现金日记账  BANKID=01,银行存款明细账    BANKID=02,现金日记账-->
+    <insert id="addOne" parameterType="java.util.Map" useGeneratedKeys="false">
+            INSERT INTO C_PAYMENT_SUBSIDIARY (
+            YEAR,
+            MONTH,
+            DAY,
+            BANKCODE,
+            VOUCHERCODE,
+            PAYBANKNAME,
+            OPPOCBMUNIT,
+            REMARKS,
+            DEBITMONEY,
+            CREDITMONEY,
+            CBMUNITID,
+            CBMUNITNAME,
+            GDATE,
+            OPERATOR,
+            PNO,
+            POWER,
+            ACCOUNTGUID,
+            UPDATE_TIME,
+            GUID
+            )
+            VALUES (
+            #{YEAR,jdbcType=VARCHAR},
+            #{MONTH,jdbcType=VARCHAR},
+            #{DAY,jdbcType=VARCHAR},
+            #{BANKCODE,jdbcType=VARCHAR},
+            #{VOUCHERCODE,jdbcType=VARCHAR},
+            #{PAYBANKNAME,jdbcType=VARCHAR},
+            #{OPPOCBMUNIT,jdbcType=VARCHAR},
+            #{REMARKS,jdbcType=VARCHAR},
+            #{DEBITMONEY,jdbcType=VARCHAR},
+            #{CREDITMONEY,jdbcType=VARCHAR},
+            #{CBMUNITID,jdbcType=VARCHAR},
+            #{CBMUNITNAME,jdbcType=VARCHAR},
+            TO_DATE(TO_CHAR(SYSDATE,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            #{OPERATOR,jdbcType=VARCHAR},
+            (select LPAD(MAX(nvl(PNO,0))+1,3,'0') from C_PAYMENT_SUBSIDIARY WHERE YEAR=#{YEAR} AND MONTH =#{MONTH} AND DAY=#{DAY} AND CBMUNITID=#{CBMUNITID} AND ACCOUNTGUID=#{ACCOUNTGUID}AND POWER=#{POWER} ),
+            #{POWER},
+            #{ACCOUNTGUID},
+            TO_DATE(TO_CHAR(SYSDATE,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss'),
+            #{YEAR}||'-'||#{MONTH}||'-'||#{DAY}||'-'||(select LPAD(MAX(nvl(PNO,0))+1,3,'0') from C_PAYMENT_SUBSIDIARY WHERE YEAR=#{YEAR} AND MONTH =#{MONTH} AND DAY=#{DAY} AND CBMUNITID=#{CBMUNITID} AND ACCOUNTGUID=#{ACCOUNTGUID}AND POWER=#{POWER} )
+            )
+    </insert>
+
+    <!--修改单条银行存款明细账/现金日记账（每个都能修改）-->
+    <update id="editSubsidiary">
+        update C_PAYMENT_SUBSIDIARY set
+        BANKCODE=#{BANKCODE,jdbcType=VARCHAR},
+        VOUCHERCODE=#{VOUCHERCODE,jdbcType=VARCHAR},
+        PAYBANKNAME=#{PAYBANKNAME,jdbcType=VARCHAR},
+        OPPOCBMUNIT=#{OPPOCBMUNIT,jdbcType=VARCHAR},
+        REMARKS=#{REMARKS,jdbcType=VARCHAR},
+        DEBITMONEY=#{DEBITMONEY,jdbcType=VARCHAR},
+        CREDITMONEY=#{CREDITMONEY,jdbcType=VARCHAR},
+        UPDATE_TIME = TO_DATE(TO_CHAR(SYSDATE,'yyyy-mm-dd hh24:mi:ss'),'yyyy-mm-dd hh24:mi:ss')
+        where CBMUNITID=#{CBMUNITID} and PNO=#{PNO}  and YEAR=#{YEAR} and MONTH=#{MONTH} and DAY=#{DAY} and POWER = #{POWER} and ACCOUNTGUID = #{ACCOUNTGUID}
+    </update>
+
+    <!--查看数据-->
+    <select id="getSubsidiary" parameterType="java.util.Map" statementType="CALLABLE" useCache="false">
+         	{CALL GET_YYKJHS_SUBSIDIARY_XZ(#{CBMUNITID},#{YEAR},#{cur, mode=OUT, jdbcType=CURSOR,javaType=ResultSet,resultMap=curMap9})}
+    </select>
+
+    <!--批量删除银行存款明细记录-->
+    <delete id="deleteSubsidiary">
+        DELETE FROM C_PAYMENT_SUBSIDIARY WHERE GUID in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.GUID}
+        </foreach>
+    </delete>
+
+   <!-- &lt;!&ndash;获取开户银行列表&ndash;&gt;
+    <select id="getBankList" resultType="java.util.Map">
+        select PAYBANKNAME,PNO,CBMUNITID,CBMUNITNAME,MONTH,YEAR,to_char(GDATE,'yyyy-mm-dd')GDATE,BANKID
+        from C_SUBSIDIARY_PAYBANK where cbmunitid=#{CBMUNITID} and BANKID=#{BANKID} order by pno desc
+    </select>
+
+    &lt;!&ndash;添加单条开户银行&ndash;&gt;
+    <insert id="addBank" parameterType="java.util.Map" useGeneratedKeys="true">
+        <selectKey resultType="java.lang.Integer" order="BEFORE" keyProperty="PNO">
+            select SEQ_SUBSIDIARY_PAYBANK.nextval from dual
+        </selectKey>
+        insert into C_SUBSIDIARY_PAYBANK(
+        CBMUNITID,
+        CBMUNITNAME,
+        YEAR,
+        MONTH,
+        PAYBANKNAME,
+        BANKID,
+        GDATE,
+        PNO
+        )values(
+        #{CBMUNITID,jdbcType=VARCHAR},
+        #{CBMUNITNAME,jdbcType=VARCHAR},
+        to_char(sysdate,'yyyy'),
+        to_char(sysdate,'mm'),
+        #{PAYBANKNAME,jdbcType=VARCHAR},
+        #{BANKID,jdbcType=VARCHAR},
+        to_date(to_char(sysdate,'yyyy-mm-dd'),'yyyy-mm-dd'),
+        #{PNO}
+        )
+    </insert>
+
+    &lt;!&ndash;编辑开户银行&ndash;&gt;
+    <update id="editBank">
+        update C_SUBSIDIARY_PAYBANK set PAYBANKNAME= #{PAYBANKNAME}
+        where CBMUNITID=#{CBMUNITID} and PNO= #{PNO}
+    </update>
+
+    &lt;!&ndash;删除开户银行&ndash;&gt;
+    <delete id="deleteBank">
+        delete from C_SUBSIDIARY_PAYBANK where PNO in
+        <foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+            #{item.PNO}
+        </foreach>
+    </delete>-->
+</mapper>

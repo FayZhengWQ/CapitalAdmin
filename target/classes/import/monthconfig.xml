@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<importFile>
+	<startRowNo>6</startRowNo>
+
+	<!--财政支出月报表-->
+	<!--cellType 单元格类型-->
+
+	<!--编码-->
+	<cell>
+		<number>0</number>
+		<key>C_ACC_CODE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--支出科目-->
+	<cell>
+		<number>1</number>
+		<key>C_ACC_NAME</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--栏目-->
+	<cell>
+		<number>2</number>
+		<key>PNO</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--公共财政预算支出|支出预算计划|年初预算-->
+	<cell>
+		<number>3</number>
+		<key>P_EARLY_BUDGET</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+	<!--公共财政预算支出|支出预算计划|科目调整-->
+	<cell>
+		<number>4</number>
+		<key>P_ADJUSTMENT</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--公共财政预算支出|支出预算计划|上级补助-->
+	<cell>
+		<number>5</number>
+		<key>P_SUBSID</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--公共财政预算支出||小计-->
+	<cell>
+		<number>6</number>
+		<key>P_SUBTOTAL</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--公共财政预算支出|本月支出|-->
+	<cell>
+		<number>7</number>
+		<key>P_PAY_MONTH</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+	<!--公共财政预算支出|累计支出|-->
+	<cell>
+		<number>8</number>
+		<key>P_PAY_CUMULATIVE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--公共财政预算支出|占计划%-->
+	<cell>
+		<number>9</number>
+		<key>P_ACCOUNTING</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--其他预算支出|预算外支出|本月支出-->
+	<cell>
+		<number>10</number>
+		<key>O_DPAY_MONTH</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--其他预算支出|预算外支出|累计支出-->
+	<cell>
+		<number>11</number>
+		<key>O_DPAY_CUMULATIVE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+	<!--其他预算支出|地方教育附加支出|本月支出-->
+	<cell>
+		<number>12</number>
+		<key>O_LPAY_MONTH</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+	<!--其他预算支出|地方教育附加支出|累计支出-->
+	<cell>
+		<number>13</number>
+		<key>O_LPAY_CUMULATIVE</key>
+		<cellType>String</cellType>
+		<nullble>0</nullble>
+	</cell>
+
+
+
+
+
+</importFile>
+

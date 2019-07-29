@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.heitian.ssm.dao.BudgetDao">
+    <select id="isExit" resultType="java.lang.String">
+        select count(*) from C_REPORT_MONTH where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd}  and CO_CODE=#{co_code}
+    </select>
+
+    <delete id="deleteBudget">
+        delete from C_REPORT_MONTH where FISCAL=#{fiscal} and FIS_PERD=#{fis_perd} and CO_CODE=#{co_code}
+    </delete>
+
+    <!--从用友数据库获取数据-->
+    <select id="getDataFrom18" resultType="com.heitian.ssm.model.report.BudgetModel">
+        select a.b_acc_code,a.b_acc_name,decode(length(a.b_acc_code),
+        5,
+        (
+        select sum(t1.money) from
+        (select b_acc_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where co_code=#{co_code}  and b_acc_code &lt;&gt; '*' and acc_code = #{acc_code}    and #{fis_perd}>=fis_perd and FISCAL=#{fiscal} group by b_acc_code) t1 where t1.b_acc_code like concat(a.b_acc_code,'__')),
+        3,
+        (
+        select sum(t2.money) from
+        (select b_acc_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where co_code=#{co_code}  and b_acc_code &lt;&gt; '*' and acc_code = #{acc_code}   and #{fis_perd}>=fis_perd  and FISCAL=#{fiscal}  group by b_acc_code,fis_perd) t2 where t2.b_acc_code like concat(a.b_acc_code,'____')),
+        b.money) money
+
+
+        ,decode(length(a.b_acc_code),
+        5,
+        (
+        select sum(t1.money) from
+        (select b_acc_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where co_code=#{co_code}  and b_acc_code &lt;&gt; '*' and acc_code = #{acc_code}    and fis_perd=#{fis_perd} and FISCAL=#{fiscal} group by b_acc_code) t1 where t1.b_acc_code like concat(a.b_acc_code,'__')),
+        3,
+        (
+        select sum(t2.money) from
+        (select b_acc_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where co_code=#{co_code}  and b_acc_code &lt;&gt; '*' and acc_code = #{acc_code}    And fis_perd=#{fis_perd}  and FISCAL=#{fiscal}  group by b_acc_code,fis_perd) t2 where t2.b_acc_code like concat(a.b_acc_code,'____')),
+        c.money) STAD_AMT
+
+        from  (select b_acc_code,b_acc_name from  gl_bacc  where co_code=#{co_code}  and FISCAL=#{fiscal} order by b_acc_code) a
+        left join
+        ( select b_acc_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where co_code=#{co_code}  and b_acc_code &lt;&gt; '*' and acc_code = #{acc_code}   and #{fis_perd}>=fis_perd and FISCAL=#{fiscal}    group by b_acc_code,fis_perd  order by b_acc_code )  b on a.b_acc_code=b.b_acc_code
+        Left Join
+        ( select b_acc_code,sum(decode(dr_cr,1, stad_amt,-1,-stad_amt))  money from gl_vou_detail_ass b  where co_code=#{co_code}  and b_acc_code &lt;&gt; '*' and acc_code = #{acc_code}   And fis_perd=#{fis_perd} and FISCAL=#{fiscal}    group by b_acc_code,fis_perd  order by b_acc_code )  c on a.b_acc_code=c.b_acc_code
+
+    </select>
+
+    <insert id="addData">
+        INSERT ALL
+        <foreach collection="list" item="item" index="index" >
+            INTO  C_REPORT_MONTH
+            (
+            B_ACC_CODE,B_ACC_NAME,MONEY5,MONEY6,FISCAL,FIS_PERD,CO_CODE
+            )
+            values
+            (
+            #{item.B_ACC_CODE},
+            #{item.B_ACC_NAME},
+            #{item.MONEY5,jdbcType=VARCHAR},
+            #{item.MONEY6,jdbcType=VARCHAR},
+            #{item.FISCAL},
+            #{item.FIS_PERD},
+            #{item.CO_CODE}
+            )
+        </foreach>
+        select 1 from dual
+    </insert>
+
+    <insert id="addData1">
+        insert into C_REPORT_MONTH  (
+            B_ACC_CODE,B_ACC_NAME,MONEY5,MONEY6,FISCAL,FIS_PERD,CO_CODE
+            )
+            values
+            (#{B_ACC_CODE},#{B_ACC_NAME},#{MONEY5,jdbcType=VARCHAR},#{MONEY6,jdbcType=VARCHAR},#{FISCAL},#{FIS_PERD},#{CO_CODE})
+    </insert>
+
+    <select id="getBudget" resultType="com.heitian.ssm.model.report.BudgetModel">
+        select * from C_REPORT_MONTH where FISCAL = #{FISCAL} and FIS_PERD = #{FIS_PERD} and CO_CODE = #{CO_CODE}
+    </select>
+</mapper>
